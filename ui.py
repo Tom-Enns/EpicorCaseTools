@@ -78,18 +78,6 @@ class Mywin(wx.Frame):
         self.nb.AddPage(self.uploadTab, " Upload ")
         self.nb.AddPage(self.settingsTab, " Settings ")  # Add the settings tab to the notebook
 
-    def on_right_click(self, event):
-        self.PopupMenu(self.context_menu)
-
-    def on_settings_button_clicked(self, event):
-        dlg = SettingsDialog(self)
-        if dlg.ShowModal() == wx.ID_OK:
-            # Update the frame style based on the new setting
-            if config.getboolean('DEFAULT', 'ALWAYS_ON_TOP', fallback=False):
-                self.SetWindowStyle(self.GetWindowStyle() | wx.STAY_ON_TOP)
-            else:
-                self.SetWindowStyle(self.GetWindowStyle() & ~wx.STAY_ON_TOP)
-        dlg.Destroy()
 
 # Settings tab
 class SettingsTab(wx.Panel):

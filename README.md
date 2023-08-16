@@ -1,2 +1,2 @@
 # Case Tools
- Epicor Case Tools App
+ This app allows you to download and upload files to Epicors case system. 
