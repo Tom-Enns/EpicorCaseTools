@@ -11,8 +11,8 @@ sixs_api_key = config.get('DEFAULT', 'SIXS_API_KEY', fallback=None)
 sixs_basic_auth = config.get('DEFAULT', 'SIXS_BASIC_AUTH', fallback=None)
 DOC_PATH = config.get('DEFAULT', 'DOC_PATH', fallback=None)
 
-ODATA_PATH = "/api/v2/odata/100"  # hardcoded value
-EFX_PATH = "/api/v2/efx/100"  # hardcoded value
+ODATA_PATH = "/api/v2/odata/100" 
+EFX_PATH = "/api/v2/efx/100"  
 
 BASE_ODATA_URL = BASE_URL + ODATA_PATH if BASE_URL else None
 BASE_EFX_URL = BASE_URL + EFX_PATH if BASE_URL else None
