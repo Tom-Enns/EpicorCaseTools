@@ -76,7 +76,7 @@ def save_attachment(case_number: int, filename: str, content: str):
     try:
         dir_path = os.path.join(DOC_PATH, str(case_number))
         os.makedirs(dir_path, exist_ok=True)
-        full_path = f"{dir_path}/{filename}"
+        full_path = os.path.join(dir_path, filename) 
 
         with open(full_path, 'wb') as f:
             f.write(base64.b64decode(content))
