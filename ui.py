@@ -100,10 +100,10 @@ class SettingsTab(wx.Panel):
         self.add_text_field(grid, "BASE URL:", 'BASE_URL')
 
         # SIXS API KEY
-        self.add_text_field(grid, "SIXS API KEY:", 'SIXS_API_KEY')
+        self.add_text_field(grid, "API KEY:", 'SIXS_API_KEY')
 
         # SIXS BASIC AUTH
-        self.add_text_field(grid, "SIXS BASIC AUTH:", 'SIXS_BASIC_AUTH')
+        self.add_text_field(grid, "BASIC AUTH:", 'SIXS_BASIC_AUTH')
 
         # DOC PATH
         self.add_doc_path_field(grid)
