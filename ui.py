@@ -294,8 +294,9 @@ class DownloadTab(wx.Panel):
 
     def open_file(self, file_path):
         try:
-            subprocess.run(["open", file_path])
-            print(f"File opened: {file_path}")
+            if os.name == 'nt':  # Check if the operating system is Windows
+                file_path = file_path.replace('/', '\\')
+            os.startfile(file_path)
         except Exception as e:
             print(f"Error opening file: {str(e)}")
 
