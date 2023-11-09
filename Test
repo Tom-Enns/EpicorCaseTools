@@ -1,0 +1,20 @@
+{
+    "newQueryId": "Test2_Import",
+    "importBytes": "UEsDBBQAAAAIAF9.......QS=",
+    "options": {}
+}
+
+{
+    "returnObj": "UEsDBBQAAAAIAFhRF1f.....AA=",
+    "parameters": {
+        "options": {},
+        "logResult": [
+            "Exporting query definitions...",
+            "Done!",
+            "Exporting query diagram settings...",
+            "Done!",
+            "Exporting query dependencies information...",
+            "Done!"
+        ]
+    }
+}

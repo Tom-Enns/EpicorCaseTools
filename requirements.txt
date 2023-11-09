@@ -13,3 +13,5 @@ six==1.16.0
 urllib3==2.0.4
 wxPython==4.2.1
 configparser==6.0.0
+pinecone-client
+document
