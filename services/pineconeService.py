@@ -52,7 +52,7 @@ class PineconeService:
         logger.info(f"Querying similar embeddings...")
         try:
             results = self.index.query(vector=query_embedding, top_k=top_k, include_metadata=True)
-            logger.info(f"Successfully queried similar embeddings. Found: {len(results)} results.")
+            logger.info(f"Successfully queried similar embeddings.")
             return results
         except Exception as e:
             logger.error(f"Failed to query similar embeddings: {str(e)}")

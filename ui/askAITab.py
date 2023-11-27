@@ -36,9 +36,10 @@ class AskAITab(wx.Panel):
         question = self.question_text.GetValue()
 
         response = ask_question(endpoint, question)
-
-        # Extract the response text from the response dictionary
-        response_text = response.get('response', '')
+        if response is not None:
+            response_text = response.get('response', '')
+        else:
+            response_text = "Request failed"
 
         # Convert the markdown text to HTML
         html_content = markdown.markdown(response_text, output_format='xhtml1')

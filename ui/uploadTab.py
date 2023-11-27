@@ -15,15 +15,24 @@ epicor_service = EpicorService()
 
 class UploadTab(wx.Panel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, case_tab):
         super(UploadTab, self).__init__(parent)
+        self.case_tab = case_tab
         self.init_ui()
+        self.refresh_data()
+
+    def get_case_number(self):
+        case_number_str = self.case_tab.get_case_number()
+        if not case_number_str:  # Add this check
+            return None
+        try:
+            return int(case_number_str)
+        except ValueError:
+            print(f"Invalid case number: {case_number_str}")
+            return None
 
     def init_ui(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-
-        self.case_input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
-        vbox.Add(self.case_input, flag=wx.EXPAND | wx.ALL, border=5)
 
         self.files_list = wx.ListCtrl(self, style=wx.LC_REPORT)
         vbox.Add(self.files_list, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
@@ -36,17 +45,13 @@ class UploadTab(wx.Panel):
 
         self.SetSizer(vbox)
 
-        self.case_input.Bind(wx.EVT_KILL_FOCUS, self.on_input_focus_lost)
-        self.case_input.Bind(wx.EVT_TEXT_ENTER, self.load_files_for_case)
         upload_button.Bind(wx.EVT_BUTTON, self.on_upload_button_clicked)
 
-    def on_input_focus_lost(self, event):
-        self.load_files_for_case(event)
-        event.Skip()
-
-    def load_files_for_case(self, event):
-        case_num = self.case_input.GetValue()
-        case_folder_path = os.path.join(DOC_PATH, case_num)
+    def refresh_data(self):
+        case_num = self.get_case_number()
+        if not case_num:  # Add this check
+            return
+        case_folder_path = os.path.join(DOC_PATH, str(case_num))  # Convert case_num to string
 
         if not os.path.exists(case_folder_path):
             return
@@ -82,8 +87,8 @@ class UploadTab(wx.Panel):
             return "OGDocs" if choice == "Design Doc" else "Supp"
 
     def upload_document(self, file_name, doc_type):
-        case_num = self.case_input.GetValue()
-        case_folder_path = os.path.join(DOC_PATH, case_num)
+        case_num = self.get_case_number()
+        case_folder_path = os.path.join(DOC_PATH, str(case_num))
         file_path = os.path.join(case_folder_path, file_name)
 
         with open(file_path, 'rb') as f:

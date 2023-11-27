@@ -1,10 +1,13 @@
 import wx
 import json
 from services.documentService import convert_doc_to_text, extract_sections_from_doc
-from services.openAIService import OpenAIService
-from services.pineconeService import PineconeService
 from services.epicorService import EpicorService
+from services.embeddingsService import EmbeddingsGeneratorService
+from services.docService import DocService
 import pyperclip
+from services.loggingService import LoggingService
+
+logger = LoggingService.get_logger(__name__)
 
 
 
@@ -15,6 +18,8 @@ class QueryTab(wx.Panel):
         super(QueryTab, self).__init__(parent)
         self.last_case_number = None
         self.init_ui()
+        self.embeddings_service = EmbeddingsGeneratorService()
+        self.doc_service = DocService()
 
     def init_ui(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -46,59 +51,69 @@ class QueryTab(wx.Panel):
 
         case_num = int(self.case_input.GetValue())
         filename = self.attachments_list.GetItem(index, 0).GetText()
-        xFileRefNum = int(self.attachments_list.GetItem(index, 2).GetText())  # Add this line
+        xFileRefNum = int(self.attachments_list.GetItem(index, 2).GetText())  
 
         # Download the file
-        file_path = self.download_file(case_num, filename, xFileRefNum)  # Modify this line
+        file_path = self.download_file(case_num, filename, xFileRefNum)  
         if not file_path:
             wx.MessageBox('File could not be downloaded')
             return
 
         # Extract sections and query services
         sections = extract_sections_from_doc(file_path)
-        need = sections['need']
+        ogneed = sections['need']
 
-        openai_service = OpenAIService()
-        embeddings_data = openai_service.generate_embeddings(need)
-        embeddings = embeddings_data['data'][0]['embedding']
+        results = self.embeddings_service.generate_and_find_similar_embeddings(ogneed, 20)
 
-        pinecone_service = PineconeService()
-        results = pinecone_service.query(embeddings, 20)
+        logger.info(f"Results from Embeddings search are: {results}")
 
         # Extract case numbers from results, sort, remove duplicates and current case number
-        case_numbers = sorted(set(int(match['id'].split('-')[1]) for match in results['matches']), reverse=True)
+
+        case_numbers = sorted(set(int(match['metadata']['CaseNum']) for match in results['matches']), reverse=True)
         case_numbers = [case for case in case_numbers if case != case_num][:3]
+        logger.info(f"Case numbers from Embeddings search are: {case_numbers}")
 
         case_sections = {}
         # For each case number, show a popup with attachments
+        # For each case number, retrieve the 'Need', 'Problem', and 'Solution' from Epicor
         for case in case_numbers:
-            attachments = epicor_service.get_case_by_id(case)
-            if attachments:
-                dialog = wx.SingleChoiceDialog(self, "Select an attachment", f"Attachments for case {case}", [att['FileName'] for att in attachments])
-                if dialog.ShowModal() == wx.ID_OK:
-                    selected_attachment = attachments[dialog.GetSelection()]
-                    # Download the selected attachment and extract sections
-                    print(f"XFileRefNum: {selected_attachment['XFileRefNum']}")
-                    content = epicor_service.download_file(selected_attachment['XFileRefNum'])
-                    print(f"Downloaded content: {content}")
-                    if content:
-                        file_path = epicor_service.save_attachment(case, selected_attachment['FileName'], content)
-                        full_text = convert_doc_to_text(file_path)
+            case_info = epicor_service.get_case_info(case)
+            if case_info:
+                # Extract 'Need', 'Problem', and 'Solution' from case_info
+                need = case_info.get('DesignNeed')
+                problem = case_info.get('DesignProblem')
+                solution = case_info.get('DesignSolution')
 
-                        # And then add the full text to the dictionary
-                        case_sections[case] = full_text
+                # Check if all fields are filled out
+                if all([need, problem, solution]):
+                    # Add the extracted information to the dictionary
+                    case_sections[case] = {'Need': need, 'Problem': problem, 'Solution': solution}
+                else:
+                    # Download the design document and extract the data
+                    attachments = epicor_service.get_case_by_id(case)
+                    if attachments:
+                        dialog = wx.SingleChoiceDialog(self, "Select an attachment", f"Attachments for case {case}", [att['FileName'] for att in attachments])
+                        if dialog.ShowModal() == wx.ID_OK:
+                            selected_attachment = attachments[dialog.GetSelection()]
+                            content = epicor_service.download_file(selected_attachment['XFileRefNum'])
+                            if content:
+                                file_path = epicor_service.save_attachment(case, selected_attachment['FileName'], content)
+                                sections = self.doc_service.extract_all_sections_from_design_doc(file_path)
+                                filtered_sections = {key: value for key, value in sections.items() if key in ['Need', 'Problem', 'Solution']}
+                                case_sections[case] = filtered_sections
 
         # Print the JSON of the sections for all cases
-        print(json.dumps(case_sections)) 
+        print(json.dumps(case_sections, indent=4))
         # Load the prompt.txt file
         with open('prompt.txt', 'r') as file:
             prompt_text = file.read()
 
         # Replace {designneed} with the design need from the current case
-        prompt_text = prompt_text.replace('{designneed}', need)
+        prompt_text = prompt_text.replace('{designneed}', ogneed)
 
         # Replace {oldcasestext} with the text version of case_sections
-        prompt_text = prompt_text.replace('{oldcasestext}', json.dumps(case_sections))
+        formatted_case_sections = json.dumps(case_sections, indent=4)
+        prompt_text = prompt_text.replace('{oldcasestext}', formatted_case_sections)
 
         # Copy the final text to the clipboard
         pyperclip.copy(prompt_text)

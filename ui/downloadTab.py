@@ -15,16 +15,25 @@ epicor_service = EpicorService()
 
 class DownloadTab(wx.Panel):
 
-    def __init__(self, parent):
+    def __init__(self, parent, case_tab):
         super(DownloadTab, self).__init__(parent)
+        self.case_tab = case_tab
         self.last_case_number = None
         self.init_ui()
+        self.refresh_data()
+
+    def get_case_number(self):
+        case_number_str = self.case_tab.get_case_number()
+        if not case_number_str:  # Add this check
+            return None
+        try:
+            return int(case_number_str)
+        except ValueError:
+            print(f"Invalid case number: {case_number_str}")
+            return None
 
     def init_ui(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-
-        self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
-        vbox.Add(self.input, flag=wx.EXPAND | wx.ALL, border=5)
 
         self.attachments = wx.ListCtrl(self, style=wx.LC_REPORT)
         vbox.Add(self.attachments, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
@@ -32,23 +41,11 @@ class DownloadTab(wx.Panel):
         self.SetSizer(vbox)
 
         self.attachments.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_download)
-        self.input.Bind(wx.EVT_KILL_FOCUS, self.on_input_focus_lost)
-        self.input.Bind(wx.EVT_TEXT_ENTER, self.on_input_enter)
 
-    def on_input_focus_lost(self, event):
-        self.retrieve_attachments_if_case_changed()
-        event.Skip()
-
-    def on_input_enter(self, event):
-        self.retrieve_attachments_if_case_changed()
-        event.Skip()
-
-    def retrieve_attachments_if_case_changed(self):
-        try:
-            case_num = int(self.input.GetValue())
-        except ValueError:
+    def refresh_data(self):
+        case_num = self.get_case_number()
+        if not case_num:  # Add this check
             return
-
         if case_num != self.last_case_number:
             self.get_attachments(case_num)
             self.last_case_number = case_num
@@ -91,7 +88,7 @@ class DownloadTab(wx.Panel):
 
         filename = self.attachments.GetItem(index, 0).GetText()
         xFileRefNum = int(self.attachments.GetItem(index, 2).GetText())
-        case_num = int(self.input.GetValue())
+        case_num = self.get_case_number()
 
         self.download_file(case_num, filename, xFileRefNum)
 

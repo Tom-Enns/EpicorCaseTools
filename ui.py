@@ -8,7 +8,11 @@ from ui.uploadTab import UploadTab
 from ui.queryTab import QueryTab
 from ui.askAITab import AskAITab
 from ui.caseToolsTab import CaseToolsTab
+from ui.tasksTab import TasksTab
+from ui.caseUpdateTab import CaseUpdateTab
+from ui.caseTab import CaseTab
 from services.loggingService import LoggingService
+
 
 #start logging service
 LoggingService.setup_logging()
@@ -77,17 +81,22 @@ class Mywin(wx.Frame):
 
     def init_tabs(self):
         # Tabs
-        self.downloadTab = DownloadTab(self.nb)
-        self.uploadTab = UploadTab(self.nb)
+        self.caseTab = CaseTab(self.nb)
+        #self.downloadTab = DownloadTab(self.nb)
+        #self.uploadTab = UploadTab(self.nb)
+        #self.caseUpdateTab = CaseUpdateTab(self.nb)
+        self.tasksTab = TasksTab(self.nb)
         self.queryTab = QueryTab(self.nb) 
         self.askAITab = AskAITab(self.nb)  
         self.caseToolsTab = CaseToolsTab(self.nb) 
         self.settingsTab = SettingsTab(self.nb) 
         
     
-
-        self.nb.AddPage(self.downloadTab, " Download ")
-        self.nb.AddPage(self.uploadTab, " Upload ")
+        self.nb.AddPage(self.caseTab, " Case ")
+        #self.nb.AddPage(self.downloadTab, " Download ")
+        #self.nb.AddPage(self.uploadTab, " Upload ")
+        #self.nb.AddPage(self.caseUpdateTab, "Case Update")
+        self.nb.AddPage(self.tasksTab, " Tasks ")
         self.nb.AddPage(self.queryTab, " Query ") 
         self.nb.AddPage(self.askAITab, " Ask AI ")
         self.nb.AddPage(self.caseToolsTab, " Case Tools ")

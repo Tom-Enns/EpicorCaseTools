@@ -4,6 +4,9 @@ from typing import Optional, Union
 from docx import Document
 from .epicorService import EpicorService
 import pypandoc
+from services.loggingService import LoggingService
+
+logger = LoggingService.get_logger(__name__)
 
 epicor_service = EpicorService()
 
@@ -40,6 +43,7 @@ def extract_solution(text: str) -> Optional[str]:
 
 def extract_unit_test(text: str) -> Optional[str]:
     return extract_section(text, r"An acceptable solution will pass all of the tests below.\n([\s\S]*?)\nTerms\n\nDesign and Engineering Approach")
+
 def extract_all_sections(file_path: str):
     text = extract_text_from_doc(file_path)
     need = extract_need(text)
@@ -57,3 +61,4 @@ def extract_sections_from_doc(x_file_ref_num_or_path: Union[int, str]):
         file_path = x_file_ref_num_or_path
 
     return extract_all_sections(file_path)
+

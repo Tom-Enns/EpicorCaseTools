@@ -47,7 +47,7 @@ class EmbeddingsGeneratorService:
         try:
             query_embedding = self.openai_service.generate_embeddings([text])[0]
             search_results = self.pinecone_service.query_similar_embeddings(query_embedding, top_k)
-            logger.info(f"Successfully found {len(search_results)} similar embeddings for the provided text.")
+            logger.info(f"Successfully found similar embeddings for the provided text.")
             return search_results
         except Exception as e:
             logger.error(f"Failed to generate and find similar embeddings: {str(e)}")
