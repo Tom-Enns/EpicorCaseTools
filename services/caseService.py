@@ -133,6 +133,7 @@ class CaseService:
                 return
 
             # Create quote for case
+            
             quote_response = self.epicor_service.create_quote_for_case(case_number)
             new_quote_num = quote_response.get('NewQuoteNum') if quote_response else None
             if not new_quote_num:

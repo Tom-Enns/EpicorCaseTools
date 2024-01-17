@@ -1,31 +1,115 @@
-from services.openAIService import OpenAIService
-from services.pineconeService import PineconeService
-import json
+import wx
+import os
+import sys
+from configparser import ConfigParser
+from ui.settingsTab import SettingsTab
+from ui.downloadTab import DownloadTab
+from ui.uploadTab import UploadTab
+from ui.queryTab import QueryTab
+from ui.askAITab import AskAITab
+from ui.caseToolsTab import CaseToolsTab
+from ui.tasksTab import TasksTab
+from ui.teamsTab import TeamsTab
+from ui.caseUpdateTab import CaseUpdateTab
+from ui.caseTab import CaseTab
+from services.loggingService import LoggingService
 
-def main():
-    print("Please paste your multi-line string here. Enter 'END' on a new line when finished:")
 
-    lines = []
-    while True:
-        line = input()
-        if line.strip() == 'END':
-            break
-        lines.append(line)
+#start logging service
+LoggingService.setup_logging()
 
-    text = '\n'.join(lines)
+# Load configuration
+config = ConfigParser()
+config.read(os.path.expanduser('~/.myapp.cfg'))
 
-    openai_service = OpenAIService()
-    embeddings_data = openai_service.generate_embeddings(text)
-    embeddings = embeddings_data['data'][0]['embedding']
+# Set document path
+DOC_PATH = config.get('DEFAULT', 'DOC_PATH', fallback=None)
 
-    pinecone_service = PineconeService()
-    results = pinecone_service.query(embeddings, 5)
+# Main application window
+class Mywin(wx.Frame):
 
-    # Extract only id and score from each match
-    simplified_results = [{'id': match['id'], 'score': match['score']} for match in results['matches']]
-    print(simplified_results)
-    with open('results.json', 'w') as f:
-        json.dump(simplified_results, f)
+    def __init__(self, parent, title):
+        # Load configuration variables
+        config_vars = self.load_config_vars()
+        
+        # Check configuration variables
+        self.check_config_vars(config_vars)
 
-if __name__ == "__main__":
-    main()
+        # Initialize window
+        super(Mywin, self).__init__(parent, title=title, size=(390, 270), style=wx.DEFAULT_FRAME_STYLE | (wx.STAY_ON_TOP if config.getboolean('DEFAULT', 'ALWAYS_ON_TOP', fallback=False) else 0))
+
+        # Set icon
+        self.set_icon()
+
+        # Initialize panel and notebook
+        panel = wx.Panel(self)
+        self.nb = wx.Notebook(panel)
+
+        # Initialize tabs
+        self.init_tabs()
+
+        # Adjust the tabs' margin
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.nb, 1, wx.EXPAND | wx.ALL, 5)
+
+        panel.SetSizer(sizer)
+
+        self.Show()
+
+    def load_config_vars(self):
+        return {
+            'BASE_URL': config.get('DEFAULT', 'BASE_URL', fallback=None),
+            'SIXS_API_KEY': config.get('DEFAULT', 'SIXS_API_KEY', fallback=None),
+            'SIXS_BASIC_AUTH': config.get('DEFAULT', 'SIXS_BASIC_AUTH', fallback=None),
+            'DOC_PATH': config.get('DEFAULT', 'DOC_PATH', fallback=None),
+        }
+
+    def check_config_vars(self, config_vars):
+        for var_name, var_value in config_vars.items():
+            if not var_value:
+                wx.MessageBox(f"Configuration variable {var_name} is not set or is blank", "Warning", wx.OK | wx.ICON_WARNING)
+
+    def set_icon(self):
+        if getattr(sys, 'frozen', False):
+            # we are running in a bundle
+            bundle_dir = sys._MEIPASS
+        else:
+            # we are running in a normal Python environment
+            bundle_dir = os.path.dirname(os.path.abspath(__file__))
+
+        icon_path = os.path.join(bundle_dir, 'CaseToolsIcon.ico')
+        self.SetIcon(wx.Icon(icon_path))
+
+    def init_tabs(self):
+        # Tabs
+        self.caseTab = CaseTab(self.nb)
+        #self.downloadTab = DownloadTab(self.nb)
+        #self.uploadTab = UploadTab(self.nb)
+        #self.caseUpdateTab = CaseUpdateTab(self.nb)
+        self.tasksTab = TasksTab(self.nb)
+        self.queryTab = QueryTab(self.nb) 
+        self.askAITab = AskAITab(self.nb)  
+        self.caseToolsTab = CaseToolsTab(self.nb) 
+        self.TeamsTab = TeamsTab(self.nb) 
+        self.settingsTab = SettingsTab(self.nb) 
+        
+    
+        self.nb.AddPage(self.caseTab, " Case ")
+        #self.nb.AddPage(self.downloadTab, " Download ")
+        #self.nb.AddPage(self.uploadTab, " Upload ")
+        #self.nb.AddPage(self.caseUpdateTab, "Case Update")
+        self.nb.AddPage(self.tasksTab, " Tasks ")
+        self.nb.AddPage(self.queryTab, " Query ") 
+        self.nb.AddPage(self.askAITab, " Ask AI ")
+        self.nb.AddPage(self.caseToolsTab, " Case Tools ")
+        self.nb.AddPage(self.TeamsTab, " Teams Tools ")
+        self.nb.AddPage(self.settingsTab, " Settings ") 
+        
+       
+        
+
+
+
+app = wx.App()
+Mywin(None, "Case Tools")
+app.MainLoop()

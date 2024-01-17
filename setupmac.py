@@ -1,7 +1,7 @@
 #to run this setup enter the following in the terminal:  python setupmac.py py2app
 from setuptools import setup
 
-APP = ['ui.py']
+APP = ['main.py']
 DATA_FILES = [('', ['CaseToolsIcon.icns', 'gear.png'])]
 OPTIONS = {
     'argv_emulation': True,

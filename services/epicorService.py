@@ -248,8 +248,10 @@ class EpicorService:
         try:
             response_data = self.post_request("/api/v2/efx/100/QuoteUpdater/CreateQuoteForCase", {'HDCase': case_number})
             if response_data.get('Error'):
+                logger.error(f"Error creating quote for case {case_number}: {response_data.get('Message')}")
                 raise Exception(response_data.get('Message'))
             return response_data
+            logger.info(f"Successfully created quote for case {case_number}")
         except Exception as error:
             logger.error(f"Unable to create quote for case {case_number}: {str(error)}")
             return None
