@@ -14,8 +14,7 @@ from ui.caseUpdateTab import CaseUpdateTab
 from ui.caseTab import CaseTab
 from services.loggingService import LoggingService
 
-
-#start logging service
+# start logging service
 LoggingService.setup_logging()
 
 # Load configuration
@@ -25,18 +24,20 @@ config.read(os.path.expanduser('~/.myapp.cfg'))
 # Set document path
 DOC_PATH = config.get('DEFAULT', 'DOC_PATH', fallback=None)
 
+
 # Main application window
 class Mywin(wx.Frame):
 
     def __init__(self, parent, title):
         # Load configuration variables
         config_vars = self.load_config_vars()
-        
+
         # Check configuration variables
         self.check_config_vars(config_vars)
 
         # Initialize window
-        super(Mywin, self).__init__(parent, title=title, size=(390, 270), style=wx.DEFAULT_FRAME_STYLE | (wx.STAY_ON_TOP if config.getboolean('DEFAULT', 'ALWAYS_ON_TOP', fallback=False) else 0))
+        super(Mywin, self).__init__(parent, title=title, size=(390, 270), style=wx.DEFAULT_FRAME_STYLE | (
+            wx.STAY_ON_TOP if config.getboolean('DEFAULT', 'ALWAYS_ON_TOP', fallback=False) else 0))
 
         # Set icon
         self.set_icon()
@@ -67,7 +68,8 @@ class Mywin(wx.Frame):
     def check_config_vars(self, config_vars):
         for var_name, var_value in config_vars.items():
             if not var_value:
-                wx.MessageBox(f"Configuration variable {var_name} is not set or is blank", "Warning", wx.OK | wx.ICON_WARNING)
+                wx.MessageBox(f"Configuration variable {var_name} is not set or is blank", "Warning",
+                              wx.OK | wx.ICON_WARNING)
 
     def set_icon(self):
         if getattr(sys, 'frozen', False):
@@ -83,31 +85,26 @@ class Mywin(wx.Frame):
     def init_tabs(self):
         # Tabs
         self.caseTab = CaseTab(self.nb)
-        #self.downloadTab = DownloadTab(self.nb)
-        #self.uploadTab = UploadTab(self.nb)
-        #self.caseUpdateTab = CaseUpdateTab(self.nb)
+        # self.downloadTab = DownloadTab(self.nb)
+        # self.uploadTab = UploadTab(self.nb)
+        # self.caseUpdateTab = CaseUpdateTab(self.nb)
         self.tasksTab = TasksTab(self.nb)
-        self.queryTab = QueryTab(self.nb) 
-        self.askAITab = AskAITab(self.nb)  
-        self.caseToolsTab = CaseToolsTab(self.nb) 
-        self.TeamsTab = TeamsTab(self.nb) 
-        self.settingsTab = SettingsTab(self.nb) 
-        
-    
+        self.queryTab = QueryTab(self.nb)
+        self.askAITab = AskAITab(self.nb)
+        self.caseToolsTab = CaseToolsTab(self.nb)
+        self.TeamsTab = TeamsTab(self.nb)
+        self.settingsTab = SettingsTab(self.nb)
+
         self.nb.AddPage(self.caseTab, " Case ")
-        #self.nb.AddPage(self.downloadTab, " Download ")
-        #self.nb.AddPage(self.uploadTab, " Upload ")
-        #self.nb.AddPage(self.caseUpdateTab, "Case Update")
+        # self.nb.AddPage(self.downloadTab, " Download ")
+        # self.nb.AddPage(self.uploadTab, " Upload ")
+        # self.nb.AddPage(self.caseUpdateTab, "Case Update")
         self.nb.AddPage(self.tasksTab, " Tasks ")
-        self.nb.AddPage(self.queryTab, " Query ") 
+        self.nb.AddPage(self.queryTab, " Query ")
         self.nb.AddPage(self.askAITab, " Ask AI ")
         self.nb.AddPage(self.caseToolsTab, " Case Tools ")
         self.nb.AddPage(self.TeamsTab, " Teams Tools ")
-        self.nb.AddPage(self.settingsTab, " Settings ") 
-        
-       
-        
-
+        self.nb.AddPage(self.settingsTab, " Settings ")
 
 
 app = wx.App()

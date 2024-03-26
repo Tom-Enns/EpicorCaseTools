@@ -113,46 +113,33 @@ class CaseService:
                 metadata = {"ItemType": "Case", "CaseNum": case_number, "Component": component_type}
                 self.embeddings_service.generate_and_store_embeddings([(text_to_embed, metadata)])
                 logger.info(f"Successfully embedded component {component_type} for case {case_number}")
-    
-    def create_and_attach_quote_to_case(self, case_number: int):
+
+    def create_and_attach_quote_to_case(self, case_number: int) -> Optional[int]:
         try:
-            # Get case info
             case_info = self.epicor_service.get_case_info(case_number)
             if not case_info:
-                logger.error(f"Failed to retrieve case info for case {case_number}")
-                return
-
-            # Extract required data
+                logger.error(f'Failed to retrieve case info for case {case_number}')
+                return None
             qty = case_info.get('Qty')
             unit_price = case_info.get('UnitPrice')
-            case_description = case_info.get('CaseDescription').split('\n')[0] if case_info.get('CaseDescription') else None
-
-            # Check if data is valid
+            case_description = case_info.get('CaseDescription').split('\n')[0] if case_info.get(
+                'CaseDescription') else None
             if not all([qty, unit_price, case_description]):
-                logger.error(f"Invalid data for case {case_number}: Qty={qty}, UnitPrice={unit_price}, CaseDescription={case_description}")
-                return
-
-            # Create quote for case
-            
+                logger.error(
+                    f'Invalid data for case {case_number}: Qty={qty}, UnitPrice={unit_price}, CaseDescription={case_description}')
+                return None
             quote_response = self.epicor_service.create_quote_for_case(case_number)
             new_quote_num = quote_response.get('NewQuoteNum') if quote_response else None
             if not new_quote_num:
-                logger.error(f"Failed to create quote for case {case_number}")
-                return
-
-            # Update quote for case
+                logger.error(f'Failed to create quote for case {case_number}')
+                return None
             self.epicor_service.update_quote_for_case(new_quote_num, unit_price, qty, case_description)
-
-            # Mark quote as quoted
             self.epicor_service.mark_quote_as_quoted(new_quote_num)
-
-            # Print and attach quote to case
-            task_note = f"{case_number}-{new_quote_num}-{datetime.now()}"
-            logger.info (f"task_note: {task_note}")
+            task_note = f'{case_number}-{new_quote_num}-{datetime.now()}'
+            logger.info(f'task_note: {task_note}')
             self.epicor_service.print_and_attach_quote_to_case(case_number, new_quote_num, task_note)
-
-            logger.info(f"Successfully created and attached quote {new_quote_num} to case {case_number}")
-
+            logger.info(f'Successfully created and attached quote {new_quote_num} to case {case_number}')
+            return new_quote_num
         except Exception as e:
-            logger.error(f"Failed to create and attach quote to case {case_number}: {e}")
-            raise Exception(f"Failed to create and attach quote to case {case_number}: {e}")
+            logger.error(f'Failed to create and attach quote to case {case_number}: {e}')
+            raise Exception(f'Failed to create and attach quote to case {case_number}: {e}')

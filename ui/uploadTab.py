@@ -1,3 +1,5 @@
+import sys
+import subprocess
 import wx
 import os
 import base64
@@ -14,22 +16,11 @@ DOC_PATH = config.get('DEFAULT', 'DOC_PATH', fallback=None)
 epicor_service = EpicorService()
 
 class UploadTab(wx.Panel):
-
     def __init__(self, parent, case_tab):
         super(UploadTab, self).__init__(parent)
         self.case_tab = case_tab
         self.init_ui()
         self.refresh_data()
-
-    def get_case_number(self):
-        case_number_str = self.case_tab.get_case_number()
-        if not case_number_str:  # Add this check
-            return None
-        try:
-            return int(case_number_str)
-        except ValueError:
-            print(f"Invalid case number: {case_number_str}")
-            return None
 
     def init_ui(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -46,6 +37,17 @@ class UploadTab(wx.Panel):
         self.SetSizer(vbox)
 
         upload_button.Bind(wx.EVT_BUTTON, self.on_upload_button_clicked)
+        self.files_list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_file_double_clicked)  # Bind the double-click event
+
+    def get_case_number(self):
+        case_number_str = self.case_tab.get_case_number()
+        if not case_number_str:  # Add this check
+            return None
+        try:
+            return int(case_number_str)
+        except ValueError:
+            print(f"Invalid case number: {case_number_str}")
+            return None
 
     def refresh_data(self):
         case_num = self.get_case_number()
@@ -109,3 +111,24 @@ class UploadTab(wx.Panel):
             print('Response HTTP Response Body:', response.content)
         else:
             wx.MessageBox('HTTP Request failed', 'Error', wx.OK | wx.ICON_ERROR)
+
+    def on_file_double_clicked(self, event):
+        # New event handler for double-click
+        selected_index = event.GetIndex()
+        file_name = self.files_list.GetItem(selected_index, 0).GetText()
+        case_num = self.get_case_number()
+        if case_num is None:
+            wx.MessageBox("Case number is not valid.", "Error")
+            return
+        file_path = os.path.join(DOC_PATH, str(case_num), file_name)
+        if os.path.exists(file_path):
+            try:
+                if os.name == 'nt':  # Windows
+                    os.startfile(file_path)
+                else:  # macOS, Linux
+                    opener = "open" if sys.platform == "darwin" else "xdg-open"
+                    subprocess.call([opener, file_path])
+            except Exception as e:
+                wx.MessageBox(f"Failed to open file: {e}", "Error")
+        else:
+            wx.MessageBox("File does not exist.", "Error")

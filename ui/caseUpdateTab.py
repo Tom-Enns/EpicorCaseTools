@@ -87,40 +87,48 @@ class CaseUpdateTab(wx.Panel):
     def on_update_case_button_clicked(self, event):
         try:
             case_number = self.get_case_number()
-            part_num = "DevCon"  # Set this value directly
+            part_num = 'DevCon'
             quantity_str = self.quantity_text.GetValue()
-            unit_price = 215  # Set this value directly
-
-            if quantity_str:  # Check if quantity is not empty
+            unit_price = 215
+            hours_updated = False
+            if quantity_str:
                 quantity = float(quantity_str)
                 self.epicor_service.update_case_part_and_price(case_number, part_num, quantity, unit_price)
-
+                hours_updated = True
+            quote_attached = False
+            quote_number = None
             if self.create_attach_quote_checkbox.IsChecked():
-                self.case_service.create_and_attach_quote_to_case(case_number)
-
+                quote_number = self.case_service.create_and_attach_quote_to_case(case_number)
+                if quote_number:
+                    quote_attached = True
             assign_next_to_name = self.assignee_input.GetValue()
+            task_completed = False
+            task_assigned = False
             if self.complete_task_checkbox.IsChecked():
                 is_task_complete = self.epicor_service.complete_current_case_task(case_number)
-            else:
-                is_task_complete = True  # Skip task completion if checkbox is not checked
-
-            if is_task_complete and assign_next_to_name:  # Check if assignee is not empty
-                assign_response = self.epicor_service.assign_current_case_task(case_number, assign_next_to_name)
-                if assign_response:
-                    message = f"Task completed and assigned successfully. Response: {assign_response}"
-                else:
-                    message = "Failed to assign task."
-            elif not is_task_complete:
-                message = "Failed to complete task."
-            else:
-                message = "Task assignment skipped."
-
+                if is_task_complete:
+                    task_completed = True
+                    if assign_next_to_name:
+                        assign_response = self.epicor_service.assign_current_case_task(case_number, assign_next_to_name)
+                        if assign_response:
+                            task_assigned = True
             case_comment = self.case_comment_text.GetValue()
-            if case_comment:  # Check if comment is not empty
+            comment_added = False
+            if case_comment:
                 self.epicor_service.add_case_comment(case_number, case_comment)
-
-            wx.MessageBox(message, "Task Assignment Status", wx.OK | wx.ICON_INFORMATION)
-
+                comment_added = True
+            message = 'Case Update Summary:\n'
+            if hours_updated:
+                message += f'- Hours added successfully\n'
+            if quote_attached:
+                message += f'- Quote {quote_number} created and attached successfully\n'
+            if task_completed:
+                message += '- Task completed successfully\n'
+            if task_assigned:
+                message += '- Next task assigned successfully\n'
+            if comment_added:
+                message += '- Case comment added successfully\n'
+            wx.MessageBox(message, 'Case Update Status', wx.OK | wx.ICON_INFORMATION)
         except Exception as e:
-            error_message = str(e) + "\n\n" + traceback.format_exc()
+            error_message = str(e) + '\n\n' + traceback.format_exc()
             wx.MessageBox(error_message, 'Error', wx.OK | wx.ICON_ERROR)
