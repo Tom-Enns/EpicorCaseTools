@@ -3,14 +3,7 @@ import os
 import sys
 from configparser import ConfigParser
 from ui.settingsTab import SettingsTab
-from ui.downloadTab import DownloadTab
-from ui.uploadTab import UploadTab
-from ui.queryTab import QueryTab
-from ui.askAITab import AskAITab
-from ui.caseToolsTab import CaseToolsTab
-from ui.tasksTab import TasksTab
 from ui.teamsTab import TeamsTab
-from ui.caseUpdateTab import CaseUpdateTab
 from ui.caseTab import CaseTab
 from services.loggingService import LoggingService
 
@@ -30,6 +23,9 @@ class Mywin(wx.Frame):
 
     def __init__(self, parent, title):
         # Load configuration variables
+        self.caseTab = None
+        self.TeamsTab = None
+        self.settingsTab = None
         config_vars = self.load_config_vars()
 
         # Check configuration variables
@@ -83,26 +79,11 @@ class Mywin(wx.Frame):
         self.SetIcon(wx.Icon(icon_path))
 
     def init_tabs(self):
-        # Tabs
         self.caseTab = CaseTab(self.nb)
-        # self.downloadTab = DownloadTab(self.nb)
-        # self.uploadTab = UploadTab(self.nb)
-        # self.caseUpdateTab = CaseUpdateTab(self.nb)
-        self.tasksTab = TasksTab(self.nb)
-        self.queryTab = QueryTab(self.nb)
-        self.askAITab = AskAITab(self.nb)
-        self.caseToolsTab = CaseToolsTab(self.nb)
         self.TeamsTab = TeamsTab(self.nb)
         self.settingsTab = SettingsTab(self.nb)
 
         self.nb.AddPage(self.caseTab, " Case ")
-        # self.nb.AddPage(self.downloadTab, " Download ")
-        # self.nb.AddPage(self.uploadTab, " Upload ")
-        # self.nb.AddPage(self.caseUpdateTab, "Case Update")
-        self.nb.AddPage(self.tasksTab, " Tasks ")
-        self.nb.AddPage(self.queryTab, " Query ")
-        self.nb.AddPage(self.askAITab, " Ask AI ")
-        self.nb.AddPage(self.caseToolsTab, " Case Tools ")
         self.nb.AddPage(self.TeamsTab, " Teams Tools ")
         self.nb.AddPage(self.settingsTab, " Settings ")
 

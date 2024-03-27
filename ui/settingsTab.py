@@ -35,18 +35,6 @@ class SettingsTab(wx.Panel):
         # ALWAYS ON TOP
         self.add_checkbox_field(grid, "ALWAYS ON TOP:", 'ALWAYS_ON_TOP')
 
-        # OPENAI_APIKEY
-        self.add_text_field(grid, "OPENAI API KEY:", 'OPENAI_APIKEY')
-
-        # PINECONE_APIKEY
-        self.add_text_field(grid, "PINECONE API KEY:", 'PINECONE_APIKEY')
-
-        # PINECONE_DB
-        self.add_text_field(grid, "PINECONE DB:", 'PINECONE_DB')
-
-        # PINECONE_ENVIRONMENT
-        self.add_text_field(grid, "PINECONE ENVIRONMENT:", 'PINECONE_ENVIRONMENT')
-
         grid.AddGrowableCol(1, 1)  # Make the second column growable
 
         vbox.Add(grid, 1, flag=wx.EXPAND)
@@ -96,10 +84,6 @@ class SettingsTab(wx.Panel):
             'SIXS_API_KEY': self.SIXS_API_KEY.GetValue(),
             'SIXS_BASIC_AUTH': self.SIXS_BASIC_AUTH.GetValue(),
             'DOC_PATH': self.DOC_PATH.GetValue(),
-            'OPENAI_APIKEY': self.OPENAI_APIKEY.GetValue(),
-            'PINECONE_APIKEY': self.PINECONE_APIKEY.GetValue(),
-            'PINECONE_DB': self.PINECONE_DB.GetValue(),
-            'PINECONE_ENVIRONMENT': self.PINECONE_ENVIRONMENT.GetValue(),
         }
 
         # Check configuration variables

@@ -5,14 +5,16 @@ import requests
 import json
 import base64
 
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, Any
 from configparser import ConfigParser
 from services.loggingService import LoggingService
 
 logger = LoggingService.get_logger(__name__)
 
+
 class CaseNotFoundError(Exception):
     pass
+
 
 class EpicorService:
     def __init__(self):
@@ -24,8 +26,8 @@ class EpicorService:
         self.SIXS_BASIC_AUTH = self.config.get('DEFAULT', 'SIXS_BASIC_AUTH', fallback=None)
         self.DOC_PATH = self.config.get('DEFAULT', 'DOC_PATH', fallback=None)
 
-        self.ODATA_PATH = "/api/v2/odata/100" 
-        self.EFX_PATH = "/api/v2/efx/100"  
+        self.ODATA_PATH = "/api/v2/odata/100"
+        self.EFX_PATH = "/api/v2/efx/100"
 
         self.BASE_ODATA_URL = self.BASE_URL + self.ODATA_PATH if self.BASE_URL else None
         self.BASE_EFX_URL = self.BASE_URL + self.EFX_PATH if self.BASE_URL else None
@@ -49,13 +51,12 @@ class EpicorService:
 
         return response_data
 
-
     def get_case_info(self, case_number: int) -> Dict:
         logger.info(f"Retrieving case info for case {case_number}...")
         try:
             response_data = self.post_request("/api/v2/efx/100/CaseDev/GetCaseStatus", {'CaseNum': case_number})
             logger.info(f"Case Info response is{len(response_data)} characters long")
-            #logger.info(f"Case Info is: {response_data}")
+            # logger.info(f"Case Info is: {response_data}")
             if response_data.get('Message') == 'Record not found':
                 logger.warning(f"Case {case_number} not found.")
                 raise CaseNotFoundError(f"No data found for case {case_number}")
@@ -72,7 +73,7 @@ class EpicorService:
             logger.error(f"Unexpected error in get_case_info for case {case_number}: {e}")
             raise
 
-    def get_design_components(self, case_number: int) -> Dict:
+    def get_design_components(self, case_number: int) -> list[Any] | None:
         try:
             response_data = self.post_request("/api/v2/efx/100/CaseDev/GetCaseComponents", {'CaseNum': case_number})
             if response_data.get('Error'):
@@ -85,9 +86,11 @@ class EpicorService:
 
     def get_case_attachment_list(self, hd_case_num: int) -> Optional[List[Dict]]:
         try:
-            response_data = self.post_request("/api/v2/odata/100/Erp.BO.HelpDeskSvc/GetByID", {'hdCaseNum': hd_case_num})
+            response_data = self.post_request("/api/v2/odata/100/Erp.BO.HelpDeskSvc/GetByID",
+                                              {'hdCaseNum': hd_case_num})
             if response_data.get('HDCaseAttch'):
-                return [{'XFileRefNum': a['XFileRefNum'], 'FileName': a['FileName'], 'DocTypeID': a['DocTypeID']} for a in response_data['HDCaseAttch']]
+                return [{'XFileRefNum': a['XFileRefNum'], 'FileName': a['FileName'], 'DocTypeID': a['DocTypeID']} for a
+                        in response_data['HDCaseAttch']]
             else:
                 logger.error(f"No attachments found for case {hd_case_num}")
                 return None
@@ -96,7 +99,8 @@ class EpicorService:
 
     def update_design_components(self, case_number: int, design_components: List[Dict]) -> None:
         try:
-            self.post_request("/api/v2/efx/100/CaseDev/AddDesignComponents", {'CaseNum': case_number, 'Components': {'ComponentData': design_components}})
+            self.post_request("/api/v2/efx/100/CaseDev/AddDesignComponents",
+                              {'CaseNum': case_number, 'Components': {'ComponentData': design_components}})
         except Exception as error:
             raise Exception(f"Unable to update design components: {str(error)}")
 
@@ -108,7 +112,8 @@ class EpicorService:
 
     def download_file(self, x_file_ref_num: int) -> Optional[bytes]:
         try:
-            response_data = self.post_request("/api/v2/efx/100/CaseDev/GetCaseAttachment", {'XFileRefNum': x_file_ref_num})
+            response_data = self.post_request("/api/v2/efx/100/CaseDev/GetCaseAttachment",
+                                              {'XFileRefNum': x_file_ref_num})
             if response_data.get('Attachment'):
                 file_extension = response_data.get('FileExtension')
                 base64_response = response_data.get('Attachment')
@@ -121,7 +126,7 @@ class EpicorService:
             logger.error(f"Error retrieving file: {str(error)}")
             return None
 
-    def get_case_by_id(self, case_number: int) -> dict:
+    def get_case_by_id(self, case_number: int) -> Any | None:
 
         try:
             response = requests.get(
@@ -168,7 +173,7 @@ class EpicorService:
         try:
             dir_path = os.path.join(self.DOC_PATH, str(case_number))
             os.makedirs(dir_path, exist_ok=True)
-            full_path = os.path.join(dir_path, filename) 
+            full_path = os.path.join(dir_path, filename)
 
             with open(full_path, 'wb') as f:
                 f.write(base64.b64decode(content))
@@ -183,7 +188,7 @@ class EpicorService:
         try:
             response = requests.post(
                 url=self.BASE_EFX_URL + "/CaseTools/UploadCaseAttachment",
-                headers=self.headers, 
+                headers=self.headers,
                 json={
                     "CaseNum": int(case_num),
                     "Attachments": {
@@ -201,7 +206,7 @@ class EpicorService:
         except requests.exceptions.RequestException as e:
             logger.error('HTTP Request failed:', e)
             return None
-        
+
     def complete_current_case_task(self, case_num: int) -> bool:
         try:
             response_data = self.post_request("/api/v2/efx/100/CaseDev/CompleteTask", {'CaseNum': case_num})
@@ -212,20 +217,22 @@ class EpicorService:
         except Exception as error:
             logger.error(f"Unable to complete task for case {case_num}: {str(error)}")
             return False
-        
+
     def assign_current_case_task(self, case_num: int, assign_next_to_name: str) -> Dict:
         try:
-            response_data = self.post_request("/api/v2/efx/100/CaseDev/AssignCurrentTask", {'CaseNum': case_num, 'AssignNextToName': assign_next_to_name})
+            response_data = self.post_request("/api/v2/efx/100/CaseDev/AssignCurrentTask",
+                                              {'CaseNum': case_num, 'AssignNextToName': assign_next_to_name})
             if response_data.get('Error'):
                 raise Exception(response_data.get('Message'))
             return response_data
         except Exception as error:
             logger.error(f"Unable to complete task for case {case_num}: {str(error)}")
             return None
-    
+
     def add_case_comment(self, case_num: int, comment: str) -> Dict:
         try:
-            response_data = self.post_request("/api/v2/efx/100/CaseDev/AddCaseComment", {'CaseNum': case_num, 'Comment': comment})
+            response_data = self.post_request("/api/v2/efx/100/CaseDev/AddCaseComment",
+                                              {'CaseNum': case_num, 'Comment': comment})
             if response_data.get('Error'):
                 raise Exception(response_data.get('Message'))
             return response_data
@@ -246,7 +253,8 @@ class EpicorService:
 
     def create_quote_for_case(self, case_number: int) -> Dict:
         try:
-            response_data = self.post_request("/api/v2/efx/100/QuoteUpdater/CreateQuoteForCase", {'HDCase': case_number})
+            response_data = self.post_request("/api/v2/efx/100/QuoteUpdater/CreateQuoteForCase",
+                                              {'HDCase': case_number})
             if response_data.get('Error'):
                 logger.error(f"Error creating quote for case {case_number}: {response_data.get('Message')}")
                 raise Exception(response_data.get('Message'))
@@ -258,17 +266,20 @@ class EpicorService:
 
     def update_quote_for_case(self, quote_number: int, new_price: float, new_qty: int, case_description: str) -> Dict:
         try:
-            response_data = self.post_request("/api/v2/efx/100/QuoteUpdater/UpdateQuote", {'QuoteNum': quote_number, 'NewPrice': new_price, 'NewQty': new_qty, 'CaseDescription': case_description})
+            response_data = self.post_request("/api/v2/efx/100/QuoteUpdater/UpdateQuote",
+                                              {'QuoteNum': quote_number, 'NewPrice': new_price, 'NewQty': new_qty,
+                                               'CaseDescription': case_description})
             if response_data.get('Error'):
                 raise Exception(response_data.get('Message'))
             return response_data
         except Exception as error:
             logger.error(f"Unable to update quote {quote_number}: {str(error)}")
             return None
-    
+
     def mark_quote_as_quoted(self, quote_number: int) -> Dict:
         try:
-            response_data = self.post_request("/api/v2/efx/100/CaseQuoteAutomation/QuoteQuote", {'QuoteNum': quote_number})
+            response_data = self.post_request("/api/v2/efx/100/CaseQuoteAutomation/QuoteQuote",
+                                              {'QuoteNum': quote_number})
             if response_data.get('Error'):
                 raise Exception(response_data.get('Message'))
             return response_data
@@ -278,7 +289,9 @@ class EpicorService:
 
     def print_and_attach_quote_to_case(self, case_number: int, quote_number: int, task_note) -> Dict:
         try:
-            response_data = self.post_request("/api/v2/efx/100/CaseQuoteAutomation/GenerateAndAttachQuote", {'CaseNumber': case_number, 'QuoteNum': quote_number, 'TaskNote': task_note})
+            response_data = self.post_request("/api/v2/efx/100/CaseQuoteAutomation/GenerateAndAttachQuote",
+                                              {'CaseNumber': case_number, 'QuoteNum': quote_number,
+                                               'TaskNote': task_note})
             if response_data.get('Error'):
                 raise Exception(response_data.get('Message'))
             return response_data

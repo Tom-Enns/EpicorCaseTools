@@ -32714,3 +32714,72 @@ HTTP response body: {"code":3,"message":"ID must be ASCII, but got Case-2492-  A
 2024-03-22 00:01:53,139 - ui.caseUpdateTab - INFO - Refreshing data for case 3566
 2024-03-22 00:01:53,139 - services.epicorService - INFO - Retrieving case info for case 3566...
 2024-03-22 00:01:53,523 - services.epicorService - INFO - Case Info response is26 characters long
+2024-03-27 10:05:20,081 - services.pineconeService - INFO - Ensuring index exists...
+2024-03-27 10:05:20,346 - services.pineconeService - INFO - Ensuring index exists...
+2024-03-27 10:06:24,129 - services.pineconeService - INFO - Ensuring index exists...
+2024-03-27 10:06:24,350 - services.pineconeService - INFO - Ensuring index exists...
+2024-03-27 10:06:24,556 - services.pineconeService - INFO - Ensuring index exists...
+2024-03-27 10:06:24,668 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:06:24,668 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:06:30,865 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:06:30,865 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:06:37,564 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:06:37,566 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:06:54,981 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:06:54,982 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:06:58,047 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:06:58,047 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:08:05,355 - services.pineconeService - INFO - Ensuring index exists...
+2024-03-27 10:08:05,575 - services.pineconeService - INFO - Ensuring index exists...
+2024-03-27 10:08:05,685 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:08:05,685 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:08:09,098 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:08:09,098 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:08:30,345 - services.pineconeService - INFO - Ensuring index exists...
+2024-03-27 10:08:30,553 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:08:30,553 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:08:47,871 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:08:47,872 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:16:00,773 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:16:00,773 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:16:12,368 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:16:12,369 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:16:12,371 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:16:12,371 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:16:13,386 - ui.caseUpdateTab - INFO - Getting case number from case tab: 
+2024-03-27 10:16:13,386 - ui.caseUpdateTab - INFO - Refreshing data for case None
+2024-03-27 10:16:21,807 - ui.caseUpdateTab - INFO - Getting case number from case tab: 3040
+2024-03-27 10:16:21,807 - ui.caseUpdateTab - INFO - Found Case number: 3040
+2024-03-27 10:16:21,808 - ui.caseUpdateTab - INFO - Refreshing data for case 3040
+2024-03-27 10:16:21,808 - services.epicorService - INFO - Retrieving case info for case 3040...
+2024-03-27 10:16:25,545 - services.epicorService - INFO - Case Info response is26 characters long
+2024-03-27 10:16:25,548 - ui.caseUpdateTab - INFO - Getting case number from case tab: 3040
+2024-03-27 10:16:25,548 - ui.caseUpdateTab - INFO - Found Case number: 3040
+2024-03-27 10:16:25,548 - ui.caseUpdateTab - INFO - Refreshing data for case 3040
+2024-03-27 10:16:25,548 - services.epicorService - INFO - Retrieving case info for case 3040...
+2024-03-27 10:16:29,306 - services.epicorService - INFO - Case Info response is26 characters long
+2024-03-27 10:16:31,182 - ui.caseUpdateTab - INFO - Getting case number from case tab: 3040
+2024-03-27 10:16:31,182 - ui.caseUpdateTab - INFO - Found Case number: 3040
+2024-03-27 10:16:31,182 - ui.caseUpdateTab - INFO - Refreshing data for case 3040
+2024-03-27 10:16:31,182 - services.epicorService - INFO - Retrieving case info for case 3040...
+2024-03-27 10:16:34,882 - services.epicorService - INFO - Case Info response is26 characters long
+2024-03-27 10:16:34,887 - ui.caseUpdateTab - INFO - Getting case number from case tab: 3040
+2024-03-27 10:16:34,887 - ui.caseUpdateTab - INFO - Found Case number: 3040
+2024-03-27 10:16:34,887 - ui.caseUpdateTab - INFO - Refreshing data for case 3040
+2024-03-27 10:16:34,887 - services.epicorService - INFO - Retrieving case info for case 3040...
+2024-03-27 10:16:38,656 - services.epicorService - INFO - Case Info response is26 characters long
+2024-03-27 10:16:43,329 - ui.caseUpdateTab - INFO - Getting case number from case tab: 3040
+2024-03-27 10:16:43,329 - ui.caseUpdateTab - INFO - Found Case number: 3040
+2024-03-27 10:16:43,329 - ui.caseUpdateTab - INFO - Refreshing data for case 3040
+2024-03-27 10:16:43,329 - services.epicorService - INFO - Retrieving case info for case 3040...
+2024-03-27 10:16:47,054 - services.epicorService - INFO - Case Info response is26 characters long
+2024-03-27 10:16:48,567 - ui.caseUpdateTab - INFO - Getting case number from case tab: 3040
+2024-03-27 10:16:48,568 - ui.caseUpdateTab - INFO - Found Case number: 3040
+2024-03-27 10:16:48,568 - ui.caseUpdateTab - INFO - Refreshing data for case 3040
+2024-03-27 10:16:48,568 - services.epicorService - INFO - Retrieving case info for case 3040...
+2024-03-27 10:16:52,298 - services.epicorService - INFO - Case Info response is26 characters long
+2024-03-27 10:17:02,500 - ui.caseUpdateTab - INFO - Getting case number from case tab: 3040
+2024-03-27 10:17:02,501 - ui.caseUpdateTab - INFO - Found Case number: 3040
+2024-03-27 10:17:02,501 - ui.caseUpdateTab - INFO - Refreshing data for case 3040
+2024-03-27 10:17:02,501 - services.epicorService - INFO - Retrieving case info for case 3040...
+2024-03-27 10:17:06,690 - services.epicorService - INFO - Case Info response is26 characters long

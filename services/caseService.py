@@ -2,7 +2,6 @@
 
 from typing import List, Dict, Optional, Iterable
 from services.epicorService import EpicorService, CaseNotFoundError
-from services.embeddingsService import EmbeddingsGeneratorService
 from services.loggingService import LoggingService
 from datetime import datetime
 
@@ -50,7 +49,6 @@ class CaseDetails:
 class CaseService:
     def __init__(self):
         self.epicor_service = EpicorService()
-        self.embeddings_service = EmbeddingsGeneratorService()
 
     def embed_cases(self, case_numbers: Iterable[int]):
         logger.info(f"Embedding cases {case_numbers}...")
@@ -104,15 +102,7 @@ class CaseService:
             raise Exception(f"Failed to embed case {case_number}: {e}")
 
 
-    def embed_case_components(self, case_number: int, design_components: List[Dict]):
-        logger.info(f"Embedding components for case {case_number}...")
-        for component in design_components:
-            component_type = component.get('ComponentType')
-            text_to_embed = component.get('Description', '')
-            if text_to_embed:
-                metadata = {"ItemType": "Case", "CaseNum": case_number, "Component": component_type}
-                self.embeddings_service.generate_and_store_embeddings([(text_to_embed, metadata)])
-                logger.info(f"Successfully embedded component {component_type} for case {case_number}")
+
 
     def create_and_attach_quote_to_case(self, case_number: int) -> Optional[int]:
         try:
