@@ -298,3 +298,18 @@ class EpicorService:
         except Exception as error:
             logger.error(f"Unable to print and attach quote {quote_number} to case {case_number}: {str(error)}")
             return None
+
+    def fetch_cases(self):
+        endpoint = "/api/v2/odata/100/BaqSvc/CaseTasks/Data"
+        try:
+            response = requests.get(f'{self.BASE_URL}{endpoint}', headers=self.headers)
+            if response.status_code == 200:
+                # Log the raw response data
+                logger.info("Raw API response data: %s", response.text)
+                return response.json()['value']
+            else:
+                logger.error(f'Failed to fetch cases. Status Code: {response.status_code}')
+                return []
+        except Exception as e:
+            logger.error(f'Exception fetching cases: {str(e)}')
+            return []
