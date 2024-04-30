@@ -8,3 +8,4 @@ venv/
 .eggs/
 *.spec
 logs/
+/logs/
