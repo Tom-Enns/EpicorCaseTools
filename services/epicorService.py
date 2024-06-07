@@ -304,8 +304,6 @@ class EpicorService:
         try:
             response = requests.get(f'{self.BASE_URL}{endpoint}', headers=self.headers)
             if response.status_code == 200:
-                # Log the raw response data
-                logger.info("Raw API response data: %s", response.text)
                 return response.json()['value']
             else:
                 logger.error(f'Failed to fetch cases. Status Code: {response.status_code}')

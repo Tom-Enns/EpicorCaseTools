@@ -18,7 +18,7 @@ class SettingsTab(wx.Panel):
 
     def init_ui(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
-        grid = wx.FlexGridSizer(11, 2, 5, 5)
+        grid = wx.FlexGridSizer(12, 2, 5, 5)  # Updated to 12 rows
 
         # BASE URL
         self.add_text_field(grid, "BASE URL:", 'BASE_URL')
@@ -34,6 +34,9 @@ class SettingsTab(wx.Panel):
 
         # ALWAYS ON TOP
         self.add_checkbox_field(grid, "ALWAYS ON TOP:", 'ALWAYS_ON_TOP')
+
+        # GOOGLE API KEY
+        self.add_text_field(grid, "GOOGLE API KEY:", 'GOOGLE_API_KEY')
 
         grid.AddGrowableCol(1, 1)  # Make the second column growable
 
@@ -84,6 +87,7 @@ class SettingsTab(wx.Panel):
             'SIXS_API_KEY': self.SIXS_API_KEY.GetValue(),
             'SIXS_BASIC_AUTH': self.SIXS_BASIC_AUTH.GetValue(),
             'DOC_PATH': self.DOC_PATH.GetValue(),
+            'GOOGLE_API_KEY': self.GOOGLE_API_KEY.GetValue(),  # Add Google API key
         }
 
         # Check configuration variables

@@ -6,6 +6,10 @@ from ui.settingsTab import SettingsTab
 from ui.teamsTab import TeamsTab
 from ui.caseTab import CaseTab
 from ui.caseListTab import  CaseListTab
+from ui.eftDocGenTab import EFTDocGenTab
+from ui.richTextTab import RichTextTab
+from ui.audioTab import AudioTab
+
 from services.loggingService import LoggingService
 
 # start logging service
@@ -28,6 +32,10 @@ class Mywin(wx.Frame):
         self.caseTab = None
         self.TeamsTab = None
         self.settingsTab = None
+        self.eftDocGenTab = None
+        self.richTextTab = None
+        self.audioTab = None
+
         config_vars = self.load_config_vars()
 
         # Check configuration variables
@@ -85,11 +93,18 @@ class Mywin(wx.Frame):
         self.TeamsTab = TeamsTab(self.nb)
         self.settingsTab = SettingsTab(self.nb)
         self.caseListTab = CaseListTab(self.nb)
-        
+        self.eftDocGenTab = EFTDocGenTab(self.nb)
+        self.richTextTab = RichTextTab(self.nb)
+        self.audioTab = AudioTab(self.nb)
+
         self.nb.AddPage(self.caseListTab, 'Case List')
         self.nb.AddPage(self.caseTab, " Case ")
+        self.nb.AddPage(self.eftDocGenTab, 'EFT Doc Gen')
         self.nb.AddPage(self.TeamsTab, " Teams Tools ")
+        self.nb.AddPage(self.richTextTab, "Rich Tet")
+        self.nb.AddPage(self.audioTab, "Audio")
         self.nb.AddPage(self.settingsTab, " Settings ")
+
 
 
 app = wx.App()

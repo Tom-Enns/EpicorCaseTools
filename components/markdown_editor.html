@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Markdown Editor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+    <style>
+        body, .CodeMirror, .CodeMirror-lines, .CodeMirror pre, .editor-toolbar {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+        #debug-log {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+    <script>
+        var simplemde;
+
+        function initEditor() {
+            simplemde = new SimpleMDE({ element: document.getElementById("markdown-editor") });
+        }
+
+        function logMessage(message) {
+            var log = document.getElementById("debug-log");
+            var entry = document.createElement("div");
+            entry.textContent = message;
+            log.appendChild(entry);
+        }
+
+        window.onload = function() {
+            initEditor();
+            logMessage("Editor initialized");
+        };
+    </script>
+</head>
+<body>
+    <textarea id="markdown-editor"></textarea>
+    <div id="debug-log"></div>
+</body>
+</html>
