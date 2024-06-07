@@ -4,9 +4,8 @@ import sys
 from configparser import ConfigParser
 from ui.settingsTab import SettingsTab
 from ui.teamsTab import TeamsTab
-from ui.caseFilesTab import CaseFilesTab
+from ui.caseFilesTab import CaseTab
 from ui.caseListTab import CaseListTab
-from ui.designTab import DesignTab
 
 from services.loggingService import LoggingService
 
@@ -43,7 +42,7 @@ class Mywin(wx.Frame):
     def __init__(self, parent, title):
         # Load configuration variables
         self.caseListTab = None
-        self.caseFilesTab = None
+        self.caseTab = None
         self.TeamsTab = None
         self.settingsTab = None
         self.richTextTab = None
@@ -89,14 +88,12 @@ class Mywin(wx.Frame):
 
     def init_tabs(self):
         self.caseListTab = CaseListTab(self.nb)
-        self.caseFilesTab = CaseFilesTab(self.nb)
-        self.designTab = DesignTab(self.nb)
+        self.caseTab = CaseTab(self.nb)
         self.TeamsTab = TeamsTab(self.nb)
         self.settingsTab = SettingsTab(self.nb)
 
         self.nb.AddPage(self.caseListTab, "Open Cases")
-        self.nb.AddPage(self.caseFilesTab, "Files")
-        self.nb.AddPage(self.designTab, "Design")
+        self.nb.AddPage(self.caseTab, "Files")
         self.nb.AddPage(self.TeamsTab, "Teams Tools")
         self.nb.AddPage(self.settingsTab, "Settings")
 

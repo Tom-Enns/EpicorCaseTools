@@ -1,12 +1,37 @@
+import os
+
 import wx
-from ui.caseUpdateTab import CaseUpdateTab
-from ui.uploadTab import UploadTab
+import re
+from configparser import ConfigParser
 from ui.downloadTab import DownloadTab
+from ui.uploadTab import UploadTab
+from ui.caseUpdateTab import CaseUpdateTab
+from ui.designNeedTab import DesignNeedTab
+from ui.designDirectionsTab import DirectionsTab
+from ui.designSolutionTab import SolutionTab
+from ui.designSummaryTab import ProblemSummaryTab
+from ui.designComponentsTab import DesignComponentsTab
+from ui.richTextTab import RichTextTab
+from services.epicorService import EpicorService
+from services.googleAIService import load_examples, load_role
+import wx.lib.mixins.listctrl as listmix
 
 
-class CaseFilesTab(wx.Panel):
+
+
+def escape_js_string(s):
+    return s.replace("\\", "\\\\").replace("`", "\\`").replace("$", "\\$").replace("\"", "\\\"")
+
+
+class CaseTab(wx.Panel):
     def __init__(self, parent):
-        super(CaseFilesTab, self).__init__(parent)
+        super(CaseTab, self).__init__(parent)
+        self.epicor_service = EpicorService()
+
+        # Load examples and role
+        self.solution_examples = load_examples('samples/solution_examples.json')
+        self.problem_summary_examples = load_examples('samples/problem_summary_examples.json')
+        self.role = load_role('samples/systemprompt.txt')
 
         self.init_ui()
 
@@ -28,20 +53,30 @@ class CaseFilesTab(wx.Panel):
         vbox.Add(hbox, flag=wx.EXPAND | wx.ALL, border=5)  # Add the horizontal box sizer to the vertical box sizer
 
         # Create a notebook (tab control)
-        notebook = wx.Notebook(self)
+        self.notebook = wx.Notebook(self)
 
         # Create the page windows as children of the notebook
-        self.page1 = DownloadTab(notebook, self)
-        self.page2 = UploadTab(notebook, self)
-        self.page3 = CaseUpdateTab(notebook, self)
+        self.page1 = DownloadTab(self.notebook, self)
+        self.page2 = UploadTab(self.notebook, self)
+        self.page3 = CaseUpdateTab(self.notebook, self)
+        self.page4 = DesignNeedTab(self.notebook, self)
+        self.page5 = DirectionsTab(self.notebook)
+        self.page6 = SolutionTab(self.notebook, self)
+        self.page7 = ProblemSummaryTab(self.notebook, self)
+        self.page8 = DesignComponentsTab(self.notebook, self)
 
         # Add the pages to the notebook with the label to show on the tab
-        notebook.AddPage(self.page1, "Download")
-        notebook.AddPage(self.page2, "Upload")
-        notebook.AddPage(self.page3, "Update")
+        self.notebook.AddPage(self.page1, "Download")
+        self.notebook.AddPage(self.page2, "Upload")
+        self.notebook.AddPage(self.page3, "Update")
+        self.notebook.AddPage(self.page4, "Design Need")
+        self.notebook.AddPage(self.page5, "Directions")
+        self.notebook.AddPage(self.page6, "Solution")
+        self.notebook.AddPage(self.page7, "Problem Summary")
+        self.notebook.AddPage(self.page8, "Design Components")
 
         # Add notebook to the main sizer
-        vbox.Add(notebook, 1, flag=wx.EXPAND | wx.ALL, border=5)
+        vbox.Add(self.notebook, 1, flag=wx.EXPAND | wx.ALL, border=5)
 
         self.SetSizer(vbox)
 
@@ -49,7 +84,7 @@ class CaseFilesTab(wx.Panel):
         self.case_number_text.Bind(wx.EVT_KILL_FOCUS, self.on_case_number_updated)
         self.case_number_text.Bind(wx.EVT_TEXT_ENTER, self.on_case_number_updated)
 
-        notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.on_tab_changed)
+        self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.on_tab_changed)
 
     def get_case_number(self):
         return self.case_number_text.GetValue()
@@ -66,3 +101,14 @@ class CaseFilesTab(wx.Panel):
             self.page2.refresh_data()
             self.page3.refresh_data()
         event.Skip()
+
+    def log_js_message(self, web_view, message):
+        escaped_message = escape_js_string(message)
+        web_view.RunScript(f'logMessage(`{escaped_message}`);')
+
+    def clear_fields(self):
+        self.page4.clear_fields()
+        self.page5.clear_fields()
+        self.page6.web_view.RunScript('simplemde.value("");')
+        self.page7.web_view.RunScript('simplemde.value("");')
+        self.page8.web_view.RunScript('simplemde.value("");')
