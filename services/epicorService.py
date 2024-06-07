@@ -152,7 +152,7 @@ class EpicorService:
             logger.error(f"Error retrieving case: {str(e)}")
             return None
 
-    def download_file_by_xrefnum(self, xFileRefNum: int) -> str:
+    def download_file_by_xrefnum(self, xFileRefNum: int) -> None:
         try:
             response = requests.post(
                 url=self.BASE_ODATA_URL + "/Ice.BO.AttachmentSvc/DownloadFile",
@@ -218,7 +218,7 @@ class EpicorService:
             logger.error(f"Unable to complete task for case {case_num}: {str(error)}")
             return False
 
-    def assign_current_case_task(self, case_num: int, assign_next_to_name: str) -> Dict:
+    def assign_current_case_task(self, case_num: int, assign_next_to_name: str) -> None:
         try:
             response_data = self.post_request("/api/v2/efx/100/CaseDev/AssignCurrentTask",
                                               {'CaseNum': case_num, 'AssignNextToName': assign_next_to_name})
@@ -229,7 +229,7 @@ class EpicorService:
             logger.error(f"Unable to complete task for case {case_num}: {str(error)}")
             return None
 
-    def add_case_comment(self, case_num: int, comment: str) -> Dict:
+    def add_case_comment(self, case_num: int, comment: str) -> None:
         try:
             response_data = self.post_request("/api/v2/efx/100/CaseDev/AddCaseComment",
                                               {'CaseNum': case_num, 'Comment': comment})
@@ -251,7 +251,7 @@ class EpicorService:
         except Exception as error:
             logger.error(f"Unable to update case: {str(error)}")
 
-    def create_quote_for_case(self, case_number: int) -> Dict:
+    def create_quote_for_case(self, case_number: int) -> None:
         try:
             response_data = self.post_request("/api/v2/efx/100/QuoteUpdater/CreateQuoteForCase",
                                               {'HDCase': case_number})
@@ -264,7 +264,7 @@ class EpicorService:
             logger.error(f"Unable to create quote for case {case_number}: {str(error)}")
             return None
 
-    def update_quote_for_case(self, quote_number: int, new_price: float, new_qty: int, case_description: str) -> Dict:
+    def update_quote_for_case(self, quote_number: int, new_price: float, new_qty: int, case_description: str) -> None:
         try:
             response_data = self.post_request("/api/v2/efx/100/QuoteUpdater/UpdateQuote",
                                               {'QuoteNum': quote_number, 'NewPrice': new_price, 'NewQty': new_qty,
@@ -276,7 +276,7 @@ class EpicorService:
             logger.error(f"Unable to update quote {quote_number}: {str(error)}")
             return None
 
-    def mark_quote_as_quoted(self, quote_number: int) -> Dict:
+    def mark_quote_as_quoted(self, quote_number: int) -> None:
         try:
             response_data = self.post_request("/api/v2/efx/100/CaseQuoteAutomation/QuoteQuote",
                                               {'QuoteNum': quote_number})
@@ -287,7 +287,7 @@ class EpicorService:
             logger.error(f"Unable to mark quote {quote_number} as quoted: {str(error)}")
             return None
 
-    def print_and_attach_quote_to_case(self, case_number: int, quote_number: int, task_note) -> Dict:
+    def print_and_attach_quote_to_case(self, case_number: int, quote_number: int, task_note) -> None:
         try:
             response_data = self.post_request("/api/v2/efx/100/CaseQuoteAutomation/GenerateAndAttachQuote",
                                               {'CaseNumber': case_number, 'QuoteNum': quote_number,
