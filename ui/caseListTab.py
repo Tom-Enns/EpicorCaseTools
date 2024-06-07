@@ -145,7 +145,6 @@ class CaseListTab(wx.Panel):
                 # Convert all values to strings and handle None cases
                 row_values = [str(value) if value is not None else 'N/A' for value in row_values]
 
-                print(f'Maxsize: {sys.maxsize} Row[0]: {row_values[0]}')
                 index = self.cases_list.InsertItem(self.cases_list.GetItemCount(), row_values[0])
                 for col, value in enumerate(row_values[1:], 1):
                     self.cases_list.SetItem(index, col, value)
