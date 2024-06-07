@@ -111,7 +111,7 @@ def save_updated_eft_doc(doc_path, updated_doc_path):
         print("Failed to save the updated document. Please close it and try again.")
 
 # Example usage
-doc_path = '/Users/tomenns/Downloads/EFT Design Document Template Final.docx'
+doc_path = '' #'/Users/tomenns/Downloads/EFT Design Document Template Final.docx'
 
 # Extract data from the document
 
