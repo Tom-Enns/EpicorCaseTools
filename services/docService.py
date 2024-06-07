@@ -36,7 +36,7 @@ class DocService:
 
     def extract_all_sections_from_design_doc(self, x_file_ref_num_or_path: Union[int, str]):
         if isinstance(x_file_ref_num_or_path, int):
-            file_path = self.epicor_service.download_file_by_xrefnum(x_file_ref_num_or_path)
+            file_path = self.epicor_service.download_file_by_xRefNum(x_file_ref_num_or_path)
             if not file_path:
                 raise Exception('File could not be downloaded')
         else:

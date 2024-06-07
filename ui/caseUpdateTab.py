@@ -86,13 +86,12 @@ class CaseUpdateTab(wx.Panel):
     def on_update_case_button_clicked(self):
         try:
             case_number = self.get_case_number()
-            part_num = 'DevCon'
             quantity_str = self.quantity_text.GetValue()
             unit_price = 215
             hours_updated = False
             if quantity_str:
                 quantity = float(quantity_str)
-                self.epicor_service.update_case_part_and_price(case_number, part_num, quantity, unit_price)
+                self.epicor_service.update_case_part_and_price(case_number, quantity, unit_price)
                 hours_updated = True
             quote_attached = False
             quote_number = None

@@ -122,7 +122,7 @@ class DownloadTab(wx.Panel):
                 filename = design_file_name
             dialog.Destroy()
 
-        content = epicor_service.download_file_by_xrefnum(xFileRefNum)
+        content = epicor_service.download_file_by_xRefNum(xFileRefNum)
         if content:
             file_path = epicor_service.save_attachment(case_num, filename, content)
             if file_path:

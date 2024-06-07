@@ -55,14 +55,12 @@ class EpicorService:
         logger.info(f"Retrieving case info for case {case_number}...")
         try:
             response_data = self.post_request("/api/v2/efx/100/CaseDev/GetCaseStatus", {'CaseNum': case_number})
-            logger.info(f"Case Info response is{len(response_data)} characters long")
-            # logger.info(f"Case Info is: {response_data}")
             if response_data.get('Message') == 'Record not found':
-                logger.warning(f"Case {case_number} not found.")
-                raise CaseNotFoundError(f"No data found for case {case_number}")
+                raise CaseNotFoundError(f"Case not found: {case_number}")
             elif response_data.get('Error'):
                 raise Exception(response_data.get('Message'))
             return response_data
+
         except requests.RequestException as e:
             logger.error(f"Request failed for get_case_info: {e}")
             raise
@@ -152,22 +150,22 @@ class EpicorService:
             logger.error(f"Error retrieving case: {str(e)}")
             return None
 
-    def download_file_by_xrefnum(self, xFileRefNum: int) -> None:
-        try:
-            response = requests.post(
-                url=self.BASE_ODATA_URL + "/Ice.BO.AttachmentSvc/DownloadFile",
-                headers=self.headers,
-                json={"xFileRefNum": xFileRefNum}
-            )
+    def download_file_by_xRefNum(self, xFileRefNum: int) -> [bytes]:
+        """
+        Download a file from Kinetic based on the xFileRefNum
+        :param xFileRefNum: Ref num for desired file
+        :return: File's bytes
+        """
+        response = requests.post(
+            url=self.BASE_ODATA_URL + "/Ice.BO.AttachmentSvc/DownloadFile",
+            headers=self.headers,
+            json={"xFileRefNum": xFileRefNum}
+        )
 
-            if 'returnObj' in response.json():
-                return response.json()['returnObj']
-            else:
-                logger.error(f'No file found for xFileRefNum: {xFileRefNum}')
-                return None
-        except Exception as e:
-            logger.error(f"Error retrieving file: {str(e)}")
-            return None
+        if 'returnObj' not in response.json():
+            raise Exception(f'No file found for xFileRefNum: {xFileRefNum}')
+
+        return response.json()['returnObj']
 
     def save_attachment(self, case_number: int, filename: str, content: str):
         try:
@@ -208,106 +206,125 @@ class EpicorService:
             return None
 
     def complete_current_case_task(self, case_num: int) -> bool:
-        try:
-            response_data = self.post_request("/api/v2/efx/100/CaseDev/CompleteTask", {'CaseNum': case_num})
-            if response_data.get('Error'):
-                raise Exception(response_data.get('Message'))
-            # Return True if task update is complete and there is an active task
-            return response_data.get('Message') == "task update complete" and response_data.get('HasActiveTask')
-        except Exception as error:
-            logger.error(f"Unable to complete task for case {case_num}: {str(error)}")
-            return False
+        """
+        Complete the current task on a case
+        :param case_num: Case Num
+        :return: Is there an active task?
+        """
+        response_data = self.post_request("/api/v2/efx/100/CaseDev/CompleteTask", {'CaseNum': case_num})
+        if response_data.get('Error'):
+            raise Exception(response_data.get('Message'))
 
-    def assign_current_case_task(self, case_num: int, assign_next_to_name: str) -> None:
-        try:
-            response_data = self.post_request("/api/v2/efx/100/CaseDev/AssignCurrentTask",
-                                              {'CaseNum': case_num, 'AssignNextToName': assign_next_to_name})
-            if response_data.get('Error'):
-                raise Exception(response_data.get('Message'))
-            return response_data
-        except Exception as error:
-            logger.error(f"Unable to complete task for case {case_num}: {str(error)}")
-            return None
+        # Did we get a nice happy completion message?
+        if response_data.get('Message') != "task update complete" or not response_data.get('HasActiveTask'):
+            raise Exception(f'Failed to complete current task on case {case_num}.')
 
-    def add_case_comment(self, case_num: int, comment: str) -> None:
-        try:
-            response_data = self.post_request("/api/v2/efx/100/CaseDev/AddCaseComment",
-                                              {'CaseNum': case_num, 'Comment': comment})
-            if response_data.get('Error'):
-                raise Exception(response_data.get('Message'))
-            return response_data
-        except Exception as error:
-            logger.error(f"Unable to add comment to case {case_num}: {str(error)}")
-            return None
+    def assign_current_case_task(self, case_num: int, assign_next_to_name: str):
+        """
+        Assign the current task on a case to the specified person.
+        :param case_num: Case Num
+        :param assign_next_to_name: Workforce ID????
+        """
+        response_data = self.post_request("/api/v2/efx/100/CaseDev/AssignCurrentTask",
+                                          {'CaseNum': case_num, 'AssignNextToName': assign_next_to_name})
+        if response_data.get('Error'):
+            raise Exception(response_data.get('Message'))
 
-    def update_case_part_and_price(self, case_num: int, partnum: str, quantity: int, unitprice: float) -> None:
-        try:
-            self.post_request("/api/v2/efx/100/CaseDev/UpdatePartandPrice", {
-                'CaseNum': case_num,
-                'PartNum': partnum,
-                'Quantity': quantity,
-                'UnitPrice': unitprice
-            })
-        except Exception as error:
-            logger.error(f"Unable to update case: {str(error)}")
+    def add_case_comment(self, case_num: int, comment: str):
+        """
+        Add a new comment to a case.
+        :param case_num: Case Num
+        :param comment: Comment text
+        """
+        response_data = self.post_request("/api/v2/efx/100/CaseDev/AddCaseComment",
+                                          {'CaseNum': case_num, 'Comment': comment})
+        if response_data.get('Error'):
+            raise Exception(response_data.get('Message'))
 
-    def create_quote_for_case(self, case_number: int) -> None:
+    def update_case_part_and_price(self, case_num: int, quantity: float, unit_price: float):
+        """
+        Set and pricing on a case. Set part to 'DevCon'
+        :param case_num: Case Num
+        :param quantity: Quantity
+        :param unit_price: Unit Price
+        """
+        self.post_request("/api/v2/efx/100/CaseDev/UpdatePartandPrice", {
+            'CaseNum': case_num,
+            'PartNum': 'DevCon',
+            'Quantity': quantity,
+            'UnitPrice': unit_price
+        })
+
+    def create_quote_for_case(self, case_number: int) -> int:
+        """
+        Creates a quote for the specified case.
+        :param case_number: Case Number
+        :return: Created Quote Number
+        """
         try:
             response_data = self.post_request("/api/v2/efx/100/QuoteUpdater/CreateQuoteForCase",
                                               {'HDCase': case_number})
-            if response_data.get('Error'):
-                logger.error(f"Error creating quote for case {case_number}: {response_data.get('Message')}")
-                raise Exception(response_data.get('Message'))
-            logger.info(f"Successfully created quote for case {case_number}")
-            return response_data
-        except Exception as error:
-            logger.error(f"Unable to create quote for case {case_number}: {str(error)}")
-            return None
 
-    def update_quote_for_case(self, quote_number: int, new_price: float, new_qty: int, case_description: str) -> None:
+            if response_data.get('Error'):
+                raise Exception(response_data.get('Message'))
+
+            logger.info(f"Created quote for case {case_number}")
+            return response_data.get('NewQuoteNum')
+        except Exception as error:
+            raise Exception(f"Unable to create quote for case {case_number}: {str(error)}")
+
+    def update_quote_for_case(self, quote_number: int, unit_price: float, qty: float, description: str):
+        """
+        Apply pricing and description to a quote
+        :param quote_number: Quote to update
+        :param unit_price: Unit Price
+        :param qty: Qty
+        :param description: Description
+        """
         try:
             response_data = self.post_request("/api/v2/efx/100/QuoteUpdater/UpdateQuote",
-                                              {'QuoteNum': quote_number, 'NewPrice': new_price, 'NewQty': new_qty,
-                                               'CaseDescription': case_description})
+                                              {'QuoteNum': quote_number, 'NewPrice': unit_price, 'NewQty': qty,
+                                               'CaseDescription': description})
             if response_data.get('Error'):
                 raise Exception(response_data.get('Message'))
-            return response_data
         except Exception as error:
             logger.error(f"Unable to update quote {quote_number}: {str(error)}")
-            return None
 
-    def mark_quote_as_quoted(self, quote_number: int) -> None:
+    def mark_quote_as_quoted(self, quote_number: int):
+        """
+        Set the 'quoted' flag on a quote.
+        :param quote_number: Quote Number
+        """
         try:
             response_data = self.post_request("/api/v2/efx/100/CaseQuoteAutomation/QuoteQuote",
                                               {'QuoteNum': quote_number})
             if response_data.get('Error'):
                 raise Exception(response_data.get('Message'))
-            return response_data
         except Exception as error:
             logger.error(f"Unable to mark quote {quote_number} as quoted: {str(error)}")
-            return None
 
-    def print_and_attach_quote_to_case(self, case_number: int, quote_number: int, task_note) -> None:
-        try:
-            response_data = self.post_request("/api/v2/efx/100/CaseQuoteAutomation/GenerateAndAttachQuote",
-                                              {'CaseNumber': case_number, 'QuoteNum': quote_number,
-                                               'TaskNote': task_note})
-            if response_data.get('Error'):
-                raise Exception(response_data.get('Message'))
-            return response_data
-        except Exception as error:
-            logger.error(f"Unable to print and attach quote {quote_number} to case {case_number}: {str(error)}")
-            return None
+    def attach_quote_pdf_to_case(self, case_number: int, quote_number: int, task_note):
+        """
+        Generates a PDF of the specified quote and attaches it to the case.
+        :param case_number: Case Number
+        :param quote_number: Quote Number
+        :param task_note: ??????
+        """
+        response_data = self.post_request("/api/v2/efx/100/CaseQuoteAutomation/GenerateAndAttachQuote",
+                                          {'CaseNumber': case_number, 'QuoteNum': quote_number,
+                                           'TaskNote': task_note})
+        if response_data.get('Error'):
+            raise Exception(response_data.get('Message'))
 
     def fetch_cases(self):
+        """
+        Retrieve all pending dev cases for quoting
+        :return: Array of cases
+        """
         endpoint = "/api/v2/odata/100/BaqSvc/CaseTasks/Data"
-        try:
-            response = requests.get(f'{self.BASE_URL}{endpoint}', headers=self.headers)
-            if response.status_code == 200:
-                return response.json()['value']
-            else:
-                logger.error(f'Failed to fetch cases. Status Code: {response.status_code}')
-                return []
-        except Exception as e:
-            logger.error(f'Exception fetching cases: {str(e)}')
-            return []
+        response = requests.get(f'{self.BASE_URL}{endpoint}', headers=self.headers)
+
+        if response.status_code == 200:
+            return response.json()['value']
+        else:
+            raise Exception(f'Status Code: {response.status_code}')

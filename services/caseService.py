@@ -21,9 +21,8 @@ class CaseDetails:
             self.case_info = self.epicor_service.get_case_info(self.case_number)
         except CaseNotFoundError as e:
             logger.warning(f"Case {self.case_number} not found: {e}")
-            return  # Return from the function instead of re-throwing the exception
+            raise
         except Exception as e:
-            logger.error(f"Failed to retrieve case info for case {self.case_number}: {e}")
             raise Exception(f"Error retrieving case info for case {self.case_number}: {e}")
 
     def retrieve_design_components(self):
@@ -103,31 +102,38 @@ class CaseService:
             raise Exception(f"Failed to embed case {case_number}: {e}")
 
     def create_and_attach_quote_to_case(self, case_number: int) -> Optional[int]:
+        """
+        Generate the quote for a case, print it to PDF, and attach to the case.
+        :param case_number: Case Number
+        :return: Quote Number
+        """
         try:
+            # Retrieve details for case
             case_info = self.epicor_service.get_case_info(case_number)
             if not case_info:
-                logger.error(f'Failed to retrieve case info for case {case_number}')
-                return None
-            qty = case_info.get('Qty')
-            unit_price = case_info.get('UnitPrice')
-            case_description = case_info.get('CaseDescription').split('\n')[0] if case_info.get(
-                'CaseDescription') else None
+                raise Exception(f"Case {case_number} not found")
+
+            qty: float = case_info.get('Qty')
+            unit_price: float = case_info.get('UnitPrice')
+            case_description: str = case_info.get('CaseDescription').split('\n')[0]
+
+            # Did we find everything we need?
             if not all([qty, unit_price, case_description]):
-                logger.error(
-                    f'Invalid data for case {case_number}: Qty={qty}, UnitPrice={unit_price}, CaseDescription={case_description}')
-                return None
-            quote_response = self.epicor_service.create_quote_for_case(case_number)
-            new_quote_num = quote_response.get('NewQuoteNum') if quote_response else None
-            if not new_quote_num:
-                logger.error(f'Failed to create quote for case {case_number}')
-                return None
-            self.epicor_service.update_quote_for_case(new_quote_num, unit_price, qty, case_description)
-            self.epicor_service.mark_quote_as_quoted(new_quote_num)
-            task_note = f'{case_number}-{new_quote_num}-{datetime.now()}'
+                raise Exception(f'Invalid data for case {case_number}: Qty={qty}, UnitPrice={unit_price}, '
+                                f'CaseDescription={case_description}')
+
+            # Create the quote
+            quote_num = self.epicor_service.create_quote_for_case(case_number)
+
+            # Set pricing and description on quote. Mark it 'quoted'
+            self.epicor_service.update_quote_for_case(quote_num, unit_price, qty, case_description)
+            self.epicor_service.mark_quote_as_quoted(quote_num)
+
+            # Attach quote PDF to the case
+            task_note = f'{case_number}-{quote_num}-{datetime.now()}'
             logger.info(f'task_note: {task_note}')
-            self.epicor_service.print_and_attach_quote_to_case(case_number, new_quote_num, task_note)
-            logger.info(f'Successfully created and attached quote {new_quote_num} to case {case_number}')
-            return new_quote_num
+            self.epicor_service.attach_quote_pdf_to_case(case_number, quote_num, task_note)
+            logger.info(f'Attached quote {quote_num} to case {case_number}')
+            return quote_num
         except Exception as e:
-            logger.error(f'Failed to create and attach quote to case {case_number}: {e}')
             raise Exception(f'Failed to create and attach quote to case {case_number}: {e}')
