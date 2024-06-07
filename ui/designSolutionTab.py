@@ -1,10 +1,7 @@
+import json
 import wx
-from ui.richTextTab import RichTextTab
+from components.richTextComponent import RichTextTab
 from services.googleAIService import get_solution_statement
-
-
-def escape_js_string(s):
-    return s.replace("\\", "\\\\").replace("`", "\\`").replace("$", "\\$").replace("\"", "\\\"")
 
 
 class SolutionTab(RichTextTab):
@@ -31,9 +28,9 @@ class SolutionTab(RichTextTab):
         final_input = (f"The customer has requested the following: {design_need}\nCreate the solution statement only "
                        f"and do so based on the following instructions: {instructions}")
         response = get_solution_statement(self.case_tab.solution_examples, self.case_tab.role, final_input)
-        escaped_response = escape_js_string(response)
-        self.case_tab.log_js_message(self.web_view, f"Generated Solution: {escaped_response}")
+        print(f'Response is: {response}')
+        escaped_response = json.dumps(response)
         script = f"""
-        simplemde.value(`{escaped_response}`);
+        simplemde.value({escaped_response});
         """
         self.web_view.RunScript(script)

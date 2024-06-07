@@ -1,5 +1,4 @@
 import os
-
 import wx
 import wx.html2
 
@@ -8,6 +7,7 @@ class RichTextTab(wx.Panel):
     def __init__(self, parent):
         super(RichTextTab, self).__init__(parent)
 
+        self.web_view = None
         self.init_ui()
 
     def init_ui(self):

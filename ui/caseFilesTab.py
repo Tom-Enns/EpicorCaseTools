@@ -1,8 +1,4 @@
-import os
-
 import wx
-import re
-from configparser import ConfigParser
 from ui.downloadTab import DownloadTab
 from ui.uploadTab import UploadTab
 from ui.caseUpdateTab import CaseUpdateTab
@@ -11,12 +7,8 @@ from ui.designDirectionsTab import DirectionsTab
 from ui.designSolutionTab import SolutionTab
 from ui.designSummaryTab import ProblemSummaryTab
 from ui.designComponentsTab import DesignComponentsTab
-from ui.richTextTab import RichTextTab
 from services.epicorService import EpicorService
 from services.googleAIService import load_examples, load_role
-import wx.lib.mixins.listctrl as listmix
-
-
 
 
 def escape_js_string(s):

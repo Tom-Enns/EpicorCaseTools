@@ -1,9 +1,8 @@
+import json
 import wx
-from ui.richTextTab import RichTextTab
+from components.richTextComponent import RichTextTab
 from services.googleAIService import generate_google_ai_response
 
-def escape_js_string(s):
-    return s.replace("\\", "\\\\").replace("`", "\\`").replace("$", "\\$").replace("\"", "\\\"")
 
 class ProblemSummaryTab(RichTextTab):
     def __init__(self, parent, case_tab):
@@ -28,9 +27,8 @@ class ProblemSummaryTab(RichTextTab):
 
         prompt = f"I need you to create only the problem summary for the following Design Need and solution.\nDesign Need: {design_need}\nSolution: {solution}"
         response = generate_google_ai_response(self.case_tab.role, prompt)
-        escaped_response = escape_js_string(response)
-        self.case_tab.log_js_message(self.web_view, f"Generated Problem Summary: {escaped_response}")
+        escaped_response = json.dumps(response)
         script = f"""
-        simplemde.value(`{escaped_response}`);
+        simplemde.value('{response}');
         """
         self.web_view.RunScript(script)
