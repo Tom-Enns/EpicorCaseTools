@@ -14,6 +14,15 @@ DOC_PATH = config.get('DEFAULT', 'DOC_PATH', fallback=None)
 
 epicor_service = EpicorService()
 
+
+def open_file(file_path):
+    try:
+        subprocess.run(["open", file_path])
+        print(f"File opened: {file_path}")
+    except Exception as e:
+        print(f"Error opening file: {str(e)}")
+
+
 class DownloadTab(wx.Panel):
 
     def __init__(self, parent, case_tab):
@@ -88,7 +97,7 @@ class DownloadTab(wx.Panel):
 
         self.attachments.SetItem(i, 2, str(attachment['XFileRefNum']))
 
-    def on_download(self, event):
+    def on_download(self):
         index = self.attachments.GetFirstSelected()
         if index == -1:
             wx.MessageBox('No attachment selected')
@@ -106,18 +115,18 @@ class DownloadTab(wx.Panel):
 
         if filename.endswith(".docx") and not os.path.exists(os.path.join(case_folder_path, design_file_name)):
             dialog = wx.MessageDialog(self,
-                                    "There is no Design V1 saved to this case folder yet, do you want to rename this file?",
-                                    style=wx.YES_NO)
+                                      "There is no Design V1 saved to this case folder yet, do you want to rename this file?",
+                                      style=wx.YES_NO)
             result = dialog.ShowModal()
             if result == wx.ID_YES:
                 filename = design_file_name
             dialog.Destroy()
 
-        content = epicor_service.download_file(xFileRefNum)
+        content = epicor_service.download_file_by_xrefnum(xFileRefNum)
         if content:
             file_path = epicor_service.save_attachment(case_num, filename, content)
             if file_path:
-                self.open_file(file_path)
+                open_file(file_path)
         else:
             print(f"No content to write for: {filename}")
 
@@ -127,8 +136,8 @@ class DownloadTab(wx.Panel):
 
         if not os.path.exists(os.path.join(case_folder_path, design_file_name)):
             dialog = wx.MessageDialog(self,
-                                    "There is no Design V1 saved to this case folder yet, do you want to rename this file?",
-                                    style=wx.YES_NO)
+                                      "There is no Design V1 saved to this case folder yet, do you want to rename this file?",
+                                      style=wx.YES_NO)
             result = dialog.ShowModal()
             if result == wx.ID_YES:
                 filename = design_file_name
@@ -136,14 +145,7 @@ class DownloadTab(wx.Panel):
 
         return filename
 
-    def open_file(self, file_path):
-        try:
-            subprocess.run(["open", file_path])
-            print(f"File opened: {file_path}")
-        except Exception as e:
-            print(f"Error opening file: {str(e)}")
-    
-    def on_create_design_doc(self, event):
+    def on_create_design_doc(self):
         # Get the case number
         case_num = self.get_case_number()
         if not case_num:

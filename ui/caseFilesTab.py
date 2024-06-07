@@ -3,9 +3,10 @@ from ui.caseUpdateTab import CaseUpdateTab
 from ui.uploadTab import UploadTab
 from ui.downloadTab import DownloadTab
 
-class CaseTab(wx.Panel):
+
+class CaseFilesTab(wx.Panel):
     def __init__(self, parent):
-        super(CaseTab, self).__init__(parent)
+        super(CaseFilesTab, self).__init__(parent)
 
         self.init_ui()
 
@@ -47,7 +48,7 @@ class CaseTab(wx.Panel):
         # Bind events
         self.case_number_text.Bind(wx.EVT_KILL_FOCUS, self.on_case_number_updated)
         self.case_number_text.Bind(wx.EVT_TEXT_ENTER, self.on_case_number_updated)
-        
+
         notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.on_tab_changed)
 
     def get_case_number(self):

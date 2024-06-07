@@ -3,6 +3,17 @@ from configparser import ConfigParser
 import os
 
 config = ConfigParser()
+DOC_PATH = ""
+
+
+def check_config_vars(config_vars):
+    unset_vars = [var_name for var_name, var_value in config_vars.items() if not var_value]
+
+    if unset_vars:
+        wx.MessageBox(f"Configuration variables {', '.join(unset_vars)} are not set or are blank", "Warning",
+                      wx.OK | wx.ICON_WARNING)
+        return
+
 
 class SettingsTab(wx.Panel):
 
@@ -74,14 +85,13 @@ class SettingsTab(wx.Panel):
         grid.Add(checkbox, flag=wx.EXPAND | wx.RIGHT | wx.BOTTOM, border=5)
         setattr(self, config_key, checkbox)
 
-    def on_select_folder_button_clicked(self, event):
+    def on_select_folder_button_clicked(self):
         dlg = wx.DirDialog(self, "Choose a directory:", style=wx.DD_DEFAULT_STYLE)
         if dlg.ShowModal() == wx.ID_OK:
             self.DOC_PATH.SetValue(dlg.GetPath())
         dlg.Destroy()
 
-    def on_save_button_clicked(self, event):
-
+    def on_save_button_clicked(self):
         config_vars = {
             'BASE_URL': self.BASE_URL.GetValue(),
             'SIXS_API_KEY': self.SIXS_API_KEY.GetValue(),
@@ -91,7 +101,7 @@ class SettingsTab(wx.Panel):
         }
 
         # Check configuration variables
-        self.check_config_vars(config_vars)
+        check_config_vars(config_vars)
 
         # Save configuration
         self.config['DEFAULT'] = config_vars
@@ -109,10 +119,3 @@ class SettingsTab(wx.Panel):
         DOC_PATH = config.get('DEFAULT', 'DOC_PATH', fallback=None)
 
         wx.MessageBox("Configuration saved successfully", "Success", wx.OK | wx.ICON_INFORMATION)
-
-    def check_config_vars(self, config_vars):
-        unset_vars = [var_name for var_name, var_value in config_vars.items() if not var_value]
-
-        if unset_vars:
-            wx.MessageBox(f"Configuration variables {', '.join(unset_vars)} are not set or are blank", "Warning", wx.OK | wx.ICON_WARNING)
-            return

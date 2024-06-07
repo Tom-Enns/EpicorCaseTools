@@ -3,6 +3,7 @@ import os
 import pyperclip
 from services.meetingParserService import MeetingParserService
 
+
 class TeamsTab(wx.Panel):
     def __init__(self, parent):
         super(TeamsTab, self).__init__(parent)
@@ -21,7 +22,7 @@ class TeamsTab(wx.Panel):
 
         self.SetSizer(vbox)
 
-    def onOpenFile(self, event):
+    def onOpenFile(self):
         print(os.getcwd())
         wildcard = "Text files (*.txt;*.vtt)|*.txt;*.vtt"
         dialog = wx.FileDialog(self, "Open Text File", wildcard=wildcard)
@@ -33,7 +34,6 @@ class TeamsTab(wx.Panel):
 
             with open('samples/airole.txt', 'r', encoding='utf-8') as file:
                 airole_text = file.read()
-
 
             output_text = airole_text.replace('{meetingtranscript}', cleaned_content)
 

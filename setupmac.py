@@ -1,4 +1,4 @@
-#to run this setup enter the following in the terminal:  python setupmac.py py2app
+# to run this setup enter the following in the terminal:  python setupmac.py py2app
 from setuptools import setup
 
 APP = ['main.py']

@@ -7,6 +7,7 @@ from services.caseService import CaseService
 
 logger = LoggingService.get_logger(__name__)
 
+
 class CaseUpdateTab(wx.Panel):
     def __init__(self, parent, case_tab):
         super(CaseUpdateTab, self).__init__(parent)
@@ -14,7 +15,6 @@ class CaseUpdateTab(wx.Panel):
         self.epicor_service = EpicorService()
         self.case_service = CaseService()
         self.init_ui()
-
 
     def get_case_number(self):
         case_number_str = self.case_tab.get_case_number()
@@ -62,7 +62,7 @@ class CaseUpdateTab(wx.Panel):
         self.update_case_button.Bind(wx.EVT_BUTTON, self.on_update_case_button_clicked)
 
         self.SetSizer(vbox)
-    
+
     def refresh_data(self):
         case_num = self.get_case_number()
         logger.info(f"Refreshing data for case {case_num}")
@@ -74,7 +74,6 @@ class CaseUpdateTab(wx.Panel):
             # Update checkbox label
             self.complete_task_checkbox.SetLabel(f"Complete {case_info['CurrentTask']}")
 
-
             if case_info['CurrentTask'] == 'Write Design Spec':
                 assignee = re.match(r'(.+?):', case_info['CaseOwner']).group(1)
             elif case_info['CurrentTask'] == 'Assign Resource':
@@ -84,7 +83,7 @@ class CaseUpdateTab(wx.Panel):
 
             self.assignee_input.SetValue(assignee)
 
-    def on_update_case_button_clicked(self, event):
+    def on_update_case_button_clicked(self):
         try:
             case_number = self.get_case_number()
             part_num = 'DevCon'

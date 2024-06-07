@@ -8,6 +8,7 @@ import tempfile
 import threading
 import queue
 
+
 class AudioRecorder:
     def __init__(self, sample_rate=44100, chunk_duration=5):
         self.sample_rate = sample_rate
@@ -31,7 +32,7 @@ class AudioRecorder:
             self.record_thread.join()
 
     def _record_audio(self):
-        def callback(indata, frames, time, status):
+        def callback(indata):
             if self.is_recording:
                 self.audio_queue.put(indata.copy())
 

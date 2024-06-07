@@ -1,8 +1,6 @@
-# File: ui/caseListTab.py
-import sys
-
 import wx
 from services.epicorService import EpicorService  # Ensure you have this import
+
 
 class CaseListTab(wx.Panel):
     def __init__(self, parent):
@@ -155,14 +153,14 @@ class CaseListTab(wx.Panel):
         return ((selected_assignee == "All" or selected_assignee == case.get('SalesRep1_Name', '')) and
                 (selected_task == "All" or selected_task == case.get('Task_TaskDescription', '')))
 
-    def on_filter_changed(self, event):
+    def on_filter_changed(self):
         self.update_cases_list()
 
-    def on_refresh_clicked(self, event):
+    def on_refresh_clicked(self):
         # Reload your case data and refresh the list
         self.load_cases()
 
-    def on_sort_by_changed(self, event):
+    def on_sort_by_changed(self):
         sort_column = self.sort_by_dropdown.GetSelection()
         self.sort_cases(sort_column)
         self.update_cases_list()
@@ -178,4 +176,3 @@ class CaseListTab(wx.Panel):
         sort_key = column_keys[col_index]
 
         self.cases.sort(key=lambda x: x.get(sort_key, '') or '')
-

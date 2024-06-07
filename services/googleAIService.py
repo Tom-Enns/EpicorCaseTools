@@ -3,6 +3,7 @@ from configparser import ConfigParser
 import os
 import json
 
+
 def setup_genai():
     # Load configuration
     config = ConfigParser()
@@ -43,15 +44,18 @@ def setup_genai():
 
     return generation_config, safety_settings
 
+
 def load_role(file_path):
     with open(file_path, 'r') as file:
         role = file.read().strip()
     return role
 
+
 def load_examples(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         examples = json.load(file)
     return examples
+
 
 def generate_google_ai_response(role, prompt):
     generation_config, safety_settings = setup_genai()
@@ -79,6 +83,7 @@ def generate_google_ai_response(role, prompt):
     response = chat_session.send_message(prompt)
     return response.text
 
+
 def get_solution_statement(examples, role, final_need):
     generation_config, safety_settings = setup_genai()
 
@@ -102,5 +107,3 @@ def get_solution_statement(examples, role, final_need):
 
     response = model.generate_content(prompt_parts)
     return response.text
-
-

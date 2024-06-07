@@ -5,7 +5,6 @@ import tempfile
 import threading
 import wx
 import re
-from wx.html2 import WebView
 from services.whisperService import convert_audio_to_text
 from services.epicorService import EpicorService
 from services.docService import DocService
@@ -13,12 +12,24 @@ from services.googleAIService import get_solution_statement, load_examples, load
 from services.recordingService import AudioRecorder
 from ui.richTextTab import RichTextTab
 
+
 def escape_js_string(s):
     return s.replace("\\", "\\\\").replace("`", "\\`").replace("$", "\\$").replace("\"", "\\\"")
 
-class AudioTab(wx.Panel):
+
+def log_js_message(web_view, message):
+    escaped_message = escape_js_string(message)
+    web_view.RunScript(f'logMessage(`{escaped_message}`);')
+
+
+def is_gibberish(text):
+    gibberish_pattern = re.compile(r'^[\d\.\%\s]+$')
+    return bool(gibberish_pattern.match(text))
+
+
+class DesignTab(wx.Panel):
     def __init__(self, parent):
-        super(AudioTab, self).__init__(parent)
+        super(DesignTab, self).__init__(parent)
 
         self.epicor_service = EpicorService()
         self.doc_service = DocService()
@@ -57,7 +68,8 @@ class AudioTab(wx.Panel):
         # Transcription Tab
         transcription_tab = wx.Panel(self.notebook)
         transcription_vbox = wx.BoxSizer(wx.VERTICAL)
-        transcription_vbox.Add(wx.StaticText(transcription_tab, label='Transcription:'), flag=wx.LEFT | wx.TOP, border=5)
+        transcription_vbox.Add(wx.StaticText(transcription_tab, label='Transcription:'), flag=wx.LEFT | wx.TOP,
+                               border=5)
         self.transcription_box = wx.TextCtrl(transcription_tab, style=wx.TE_MULTILINE)
         transcription_vbox.Add(self.transcription_box, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
         self.record_btn = wx.Button(transcription_tab, label="Record")
@@ -92,10 +104,6 @@ class AudioTab(wx.Panel):
 
         self.transcribed_text = ""
 
-    def log_js_message(self, web_view, message):
-        escaped_message = escape_js_string(message)
-        web_view.RunScript(f'logMessage(`{escaped_message}`);')
-
     def clear_fields(self):
         self.design_need_text.SetValue('')
         self.transcription_box.SetValue('')
@@ -104,7 +112,7 @@ class AudioTab(wx.Panel):
         self.notebook.GetPage(4).web_view.RunScript('simplemde.value("");')
         self.transcribed_text = ''
 
-    def on_record(self, event):
+    def on_record(self):
         if self.recorder.is_recording:
             self.recorder.stop_recording()
             self.record_btn.SetLabel("Record")
@@ -116,17 +124,13 @@ class AudioTab(wx.Panel):
     def start_transcription(self):
         def transcribe():
             for transcription in self.recorder.transcribe_audio(convert_audio_to_text):
-                if not self.is_gibberish(transcription):
+                if not is_gibberish(transcription):
                     self.transcribed_text += transcription + "\n"
                     wx.CallAfter(self.transcription_box.SetValue, self.transcribed_text)
 
         threading.Thread(target=transcribe).start()
 
-    def is_gibberish(self, text):
-        gibberish_pattern = re.compile(r'^[\d\.\%\s]+$')
-        return bool(gibberish_pattern.match(text))
-
-    def on_get_design_need(self, event):
+    def on_get_design_need(self):
         case_number = self.case_number_text.GetValue()
         if not case_number:
             wx.MessageBox('Please enter a case number.', 'Error', wx.OK | wx.ICON_ERROR)
@@ -147,7 +151,7 @@ class AudioTab(wx.Panel):
                           wx.OK | wx.ICON_INFORMATION)
 
     def load_design_need(self, x_file_ref_num):
-        file_content = self.epicor_service.download_file(x_file_ref_num)
+        file_content = self.epicor_service.download_file_by_xrefnum(x_file_ref_num)
         if file_content:
             temp_file_path = os.path.join(tempfile.gettempdir(), f"temp_{x_file_ref_num}.docx")
             with open(temp_file_path, 'wb') as temp_file:
@@ -159,7 +163,7 @@ class AudioTab(wx.Panel):
         else:
             wx.MessageBox('Failed to download the selected document.', 'Download Error', wx.OK | wx.ICON_ERROR)
 
-    def on_get_solution(self, event):
+    def on_get_solution(self):
         if not self.role:
             wx.MessageBox('Role is not set. Please set it in the settings.', 'Error', wx.OK | wx.ICON_ERROR)
             return
@@ -175,13 +179,13 @@ class AudioTab(wx.Panel):
         final_input = f"The customer has requested the following: {design_need}\nCreate the solution statement only and do so based on the following instructions: {instructions}"
         response = get_solution_statement(self.solution_examples, self.role, final_input)
         escaped_response = escape_js_string(response)
-        self.log_js_message(self.notebook.GetPage(2).web_view, f"Generated Solution: {escaped_response}")
+        log_js_message(self.notebook.GetPage(2).web_view, f"Generated Solution: {escaped_response}")
         script = f"""
         simplemde.value(`{escaped_response}`);
         """
         self.notebook.GetPage(2).web_view.RunScript(script)
 
-    def on_generate_problem_summary(self, event):
+    def on_generate_problem_summary(self):
         if not self.role:
             wx.MessageBox('Role is not set. Please set it in the settings.', 'Error', wx.OK | wx.ICON_ERROR)
             return
@@ -197,13 +201,13 @@ class AudioTab(wx.Panel):
         prompt = f"I need you to create only the problem summary for the following Design Need and solution.\nDesign Need: {design_need}\nSolution: {solution}"
         response = generate_google_ai_response(self.role, prompt)
         escaped_response = escape_js_string(response)
-        self.log_js_message(self.notebook.GetPage(3).web_view, f"Generated Problem Summary: {escaped_response}")
+        log_js_message(self.notebook.GetPage(3).web_view, f"Generated Problem Summary: {escaped_response}")
         script = f"""
         simplemde.value(`{escaped_response}`);
         """
         self.notebook.GetPage(3).web_view.RunScript(script)
 
-    def on_generate_design_components(self, event):
+    def on_generate_design_components(self):
         if not self.role:
             wx.MessageBox('Role is not set. Please set it in the settings.', 'Error', wx.OK | wx.ICON_ERROR)
             return
@@ -218,7 +222,7 @@ class AudioTab(wx.Panel):
         prompt = f"Generate the design components for the following solution statement:\n\n{solution}\n\nReturn this in a markdown table."
         response = generate_google_ai_response(self.role, prompt)
         escaped_response = escape_js_string(response)
-        self.log_js_message(self.notebook.GetPage(4).web_view, f"Generated Design Components: {escaped_response}")
+        log_js_message(self.notebook.GetPage(4).web_view, f"Generated Design Components: {escaped_response}")
         script = f"""
         simplemde.value(`{escaped_response}`);
         """

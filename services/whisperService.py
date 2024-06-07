@@ -2,6 +2,7 @@ import whisper
 from pydub import AudioSegment
 import os
 
+
 def convert_audio_to_text(file_path):
     # Determine the file extension
     file_extension = os.path.splitext(file_path)[1].lower()

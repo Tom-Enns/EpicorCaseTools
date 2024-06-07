@@ -15,6 +15,22 @@ DOC_PATH = config.get('DEFAULT', 'DOC_PATH', fallback=None)
 
 epicor_service = EpicorService()
 
+
+def handle_upload_response(response):
+    if response is not None:
+        if response.status_code == 200:
+            wx.MessageBox('File uploaded successfully!', 'Success', wx.OK | wx.ICON_INFORMATION)
+        else:
+            # This will handle cases like 400, 403, 500, etc.
+            wx.MessageBox(f'Failed to upload file. Server responded with: {response.status_code}', 'Error',
+                          wx.OK | wx.ICON_ERROR)
+
+        print('Response HTTP Status Code:', response.status_code)
+        print('Response HTTP Response Body:', response.content)
+    else:
+        wx.MessageBox('HTTP Request failed', 'Error', wx.OK | wx.ICON_ERROR)
+
+
 class UploadTab(wx.Panel):
     def __init__(self, parent, case_tab):
         super(UploadTab, self).__init__(parent)
@@ -70,7 +86,7 @@ class UploadTab(wx.Panel):
         for i, file in enumerate(files):
             self.files_list.InsertItem(i, file)
 
-    def on_upload_button_clicked(self, event):
+    def on_upload_button_clicked(self):
         selected_index = self.files_list.GetFirstSelected()
         if selected_index == -1:
             wx.MessageBox('No file selected')
@@ -83,7 +99,8 @@ class UploadTab(wx.Panel):
             self.upload_document(file_name, doc_type)
 
     def get_document_type(self):
-        doc_type_dialog = wx.SingleChoiceDialog(self, "What type of document is this?", "Document Type", ["Design Doc", "Supporting Doc"])
+        doc_type_dialog = wx.SingleChoiceDialog(self, "What type of document is this?", "Document Type",
+                                                ["Design Doc", "Supporting Doc"])
         if doc_type_dialog.ShowModal() == wx.ID_OK:
             choice = doc_type_dialog.GetStringSelection()
             return "OGDocs" if choice == "Design Doc" else "Supp"
@@ -96,21 +113,8 @@ class UploadTab(wx.Panel):
         with open(file_path, 'rb') as f:
             encoded_content = base64.b64encode(f.read()).decode('utf-8')
 
-        self.handle_upload_response(epicor_service.upload_document_logic(case_num, file_name, doc_type, encoded_content))
-
-    def handle_upload_response(self, response):
-        if response is not None:
-            if response.status_code == 200:
-                wx.MessageBox('File uploaded successfully!', 'Success', wx.OK | wx.ICON_INFORMATION)
-            else:
-                # This will handle cases like 400, 403, 500, etc.
-                wx.MessageBox(f'Failed to upload file. Server responded with: {response.status_code}', 'Error',
-                              wx.OK | wx.ICON_ERROR)
-
-            print('Response HTTP Status Code:', response.status_code)
-            print('Response HTTP Response Body:', response.content)
-        else:
-            wx.MessageBox('HTTP Request failed', 'Error', wx.OK | wx.ICON_ERROR)
+        handle_upload_response(
+            epicor_service.upload_document_logic(case_num, file_name, doc_type, encoded_content))
 
     def on_file_double_clicked(self, event):
         # New event handler for double-click

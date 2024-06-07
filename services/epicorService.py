@@ -5,7 +5,7 @@ import requests
 import json
 import base64
 
-from typing import List, Dict, Union, Optional, Any
+from typing import List, Dict, Optional, Any
 from configparser import ConfigParser
 from services.loggingService import LoggingService
 
@@ -66,7 +66,7 @@ class EpicorService:
         except requests.RequestException as e:
             logger.error(f"Request failed for get_case_info: {e}")
             raise
-        except CaseNotFoundError as e:
+        except CaseNotFoundError:
             logger.warning(f"Case not found: {case_number}")
             raise
         except Exception as e:
@@ -115,7 +115,7 @@ class EpicorService:
             response_data = self.post_request("/api/v2/efx/100/CaseDev/GetCaseAttachment",
                                               {'XFileRefNum': x_file_ref_num})
             if response_data.get('Attachment'):
-                file_extension = response_data.get('FileExtension')
+                response_data.get('FileExtension')
                 base64_response = response_data.get('Attachment')
                 byte_array = base64.b64decode(base64_response)
                 return byte_array
@@ -152,7 +152,7 @@ class EpicorService:
             logger.error(f"Error retrieving case: {str(e)}")
             return None
 
-    def download_file(self, xFileRefNum: int) -> str:
+    def download_file_by_xrefnum(self, xFileRefNum: int) -> str:
         try:
             response = requests.post(
                 url=self.BASE_ODATA_URL + "/Ice.BO.AttachmentSvc/DownloadFile",
@@ -258,8 +258,8 @@ class EpicorService:
             if response_data.get('Error'):
                 logger.error(f"Error creating quote for case {case_number}: {response_data.get('Message')}")
                 raise Exception(response_data.get('Message'))
-            return response_data
             logger.info(f"Successfully created quote for case {case_number}")
+            return response_data
         except Exception as error:
             logger.error(f"Unable to create quote for case {case_number}: {str(error)}")
             return None

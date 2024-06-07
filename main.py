@@ -4,11 +4,9 @@ import sys
 from configparser import ConfigParser
 from ui.settingsTab import SettingsTab
 from ui.teamsTab import TeamsTab
-from ui.caseTab import CaseTab
-from ui.caseListTab import  CaseListTab
-#from ui.eftDocGenTab import EFTDocGenTab
-from ui.richTextTab import RichTextTab
-from ui.audioTab import AudioTab
+from ui.caseFilesTab import CaseFilesTab
+from ui.caseListTab import CaseListTab
+from ui.designTab import DesignTab
 
 from services.loggingService import LoggingService
 
@@ -24,22 +22,37 @@ DOC_PATH = config.get('DEFAULT', 'DOC_PATH', fallback=None)
 
 
 # Main application window
+def load_config_vars():
+    return {
+        'BASE_URL': config.get('DEFAULT', 'BASE_URL', fallback=None),
+        'SIXS_API_KEY': config.get('DEFAULT', 'SIXS_API_KEY', fallback=None),
+        'SIXS_BASIC_AUTH': config.get('DEFAULT', 'SIXS_BASIC_AUTH', fallback=None),
+        'DOC_PATH': config.get('DEFAULT', 'DOC_PATH', fallback=None),
+    }
+
+
+def check_config_vars(config_vars):
+    for var_name, var_value in config_vars.items():
+        if not var_value:
+            wx.MessageBox(f"Configuration variable {var_name} is not set or is blank", "Warning",
+                          wx.OK | wx.ICON_WARNING)
+
+
 class Mywin(wx.Frame):
 
     def __init__(self, parent, title):
         # Load configuration variables
         self.caseListTab = None
-        self.caseTab = None
+        self.caseFilesTab = None
         self.TeamsTab = None
         self.settingsTab = None
-        #self.eftDocGenTab = None
         self.richTextTab = None
-        self.audioTab = None
+        self.designTab = None
 
-        config_vars = self.load_config_vars()
+        config_vars = load_config_vars()
 
         # Check configuration variables
-        self.check_config_vars(config_vars)
+        check_config_vars(config_vars)
 
         # Initialize window
         super(Mywin, self).__init__(parent, title=title, size=(390, 270), style=wx.DEFAULT_FRAME_STYLE | (
@@ -63,20 +76,6 @@ class Mywin(wx.Frame):
 
         self.Show()
 
-    def load_config_vars(self):
-        return {
-            'BASE_URL': config.get('DEFAULT', 'BASE_URL', fallback=None),
-            'SIXS_API_KEY': config.get('DEFAULT', 'SIXS_API_KEY', fallback=None),
-            'SIXS_BASIC_AUTH': config.get('DEFAULT', 'SIXS_BASIC_AUTH', fallback=None),
-            'DOC_PATH': config.get('DEFAULT', 'DOC_PATH', fallback=None),
-        }
-
-    def check_config_vars(self, config_vars):
-        for var_name, var_value in config_vars.items():
-            if not var_value:
-                wx.MessageBox(f"Configuration variable {var_name} is not set or is blank", "Warning",
-                              wx.OK | wx.ICON_WARNING)
-
     def set_icon(self):
         if getattr(sys, 'frozen', False):
             # we are running in a bundle
@@ -89,22 +88,17 @@ class Mywin(wx.Frame):
         self.SetIcon(wx.Icon(icon_path))
 
     def init_tabs(self):
-        self.caseTab = CaseTab(self.nb)
+        self.caseListTab = CaseListTab(self.nb)
+        self.caseFilesTab = CaseFilesTab(self.nb)
+        self.designTab = DesignTab(self.nb)
         self.TeamsTab = TeamsTab(self.nb)
         self.settingsTab = SettingsTab(self.nb)
-        self.caseListTab = CaseListTab(self.nb)
-        #self.eftDocGenTab = EFTDocGenTab(self.nb)
-        self.richTextTab = RichTextTab(self.nb)
-        self.audioTab = AudioTab(self.nb)
 
-        self.nb.AddPage(self.caseListTab, 'Case List')
-        self.nb.AddPage(self.caseTab, " Case ")
-        #self.nb.AddPage(self.eftDocGenTab, 'EFT Doc Gen')
-        self.nb.AddPage(self.TeamsTab, " Teams Tools ")
-        self.nb.AddPage(self.richTextTab, "Rich Tet")
-        self.nb.AddPage(self.audioTab, "Audio")
-        self.nb.AddPage(self.settingsTab, " Settings ")
-
+        self.nb.AddPage(self.caseListTab, "Open Cases")
+        self.nb.AddPage(self.caseFilesTab, "Files")
+        self.nb.AddPage(self.designTab, "Design")
+        self.nb.AddPage(self.TeamsTab, "Teams Tools")
+        self.nb.AddPage(self.settingsTab, "Settings")
 
 
 app = wx.App()

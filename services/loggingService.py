@@ -1,6 +1,7 @@
 import logging
 import os
 
+
 class LoggingService:
     @staticmethod
     def setup_logging():

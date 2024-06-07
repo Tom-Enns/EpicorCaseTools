@@ -1,6 +1,6 @@
 # caseService.py
 
-from typing import List, Dict, Optional, Iterable
+from typing import Optional, Iterable
 from services.epicorService import EpicorService, CaseNotFoundError
 from services.loggingService import LoggingService
 from datetime import datetime
@@ -45,7 +45,6 @@ class CaseDetails:
         self.retrieve_tests()
 
 
-
 class CaseService:
     def __init__(self):
         self.epicor_service = EpicorService()
@@ -79,7 +78,9 @@ class CaseService:
                 "Need": case_details.case_info.get('DesignNeed'),
                 "Problem": case_details.case_info.get('DesignProblem'),
                 "Solution": case_details.case_info.get('DesignSolution'),
-                "Components": ', '.join([f"{component.get('ComponentName', '')}, {component.get('ComponentType', '')}, {component.get('ComponentPurpose', '')}" for component in case_details.design_components])
+                "Components": ', '.join([
+                    f"{component.get('ComponentName', '')}, {component.get('ComponentType', '')}, {component.get('ComponentPurpose', '')}"
+                    for component in case_details.design_components])
             }
 
             logger.info(f"texts_and_types for case {case_number}: {texts_and_types}")
@@ -100,9 +101,6 @@ class CaseService:
         except Exception as e:
             logger.error(f"Failed to embed case {case_number}: {e}")
             raise Exception(f"Failed to embed case {case_number}: {e}")
-
-
-
 
     def create_and_attach_quote_to_case(self, case_number: int) -> Optional[int]:
         try:

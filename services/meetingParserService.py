@@ -1,5 +1,6 @@
 import re
 
+
 class MeetingParserService:
 
     @staticmethod
@@ -41,7 +42,7 @@ class MeetingParserService:
             cleaned_content += f'<v {current_speaker}>{current_text}\n'
 
         return cleaned_content
-    
+
     @staticmethod
     def convert_vtt_to_txt(vtt_path):
         txt_path = vtt_path.replace('.vtt', '.txt')
