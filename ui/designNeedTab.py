@@ -133,7 +133,8 @@ class DesignNeedTab(wx.Panel):
         if file_content:
             temp_file_path = os.path.join(tempfile.gettempdir(), f"temp_{x_file_ref_num}.docx")
             with open(temp_file_path, 'wb') as temp_file:
-                temp_file.write(base64.b64decode(file_content))
+                temp_file.write(file_content)
+                print(f"File written to {temp_file_path} with size {len(file_content)} bytes")
 
             sections = self.doc_service.extract_all_sections_from_design_doc(temp_file_path)
             design_need = sections.get("Need", "")
