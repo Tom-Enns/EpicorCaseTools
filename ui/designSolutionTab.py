@@ -1,9 +1,9 @@
-import json
 import os
 
 import wx
 import wx.html2
 from services.googleAIService import get_solution_statement
+from utilities.utilities import escape_js_string
 
 
 class SolutionTab(wx.Panel):
@@ -41,9 +41,14 @@ class SolutionTab(wx.Panel):
         final_input = (f"The customer has requested the following: {design_need}\nCreate the solution statement only "
                        f"and do so based on the following instructions: {instructions}")
         response = get_solution_statement(self.case_tab.solution_examples, self.case_tab.role, final_input)
-        print(f'Response is: {response}')
-        escaped_response = json.dumps(response)
+        escaped_response = escape_js_string(response)
         script = f"""
-        simplemde.value({escaped_response});
-        """
+            try {{
+                simplemde.value("{escaped_response}");
+                logMessage("Content set successfully");
+            }} catch (e) {{
+                logMessage("Error setting content: " + e.message);
+            }}
+            """
         self.web_view.RunScript(script)
+
