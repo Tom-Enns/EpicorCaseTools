@@ -5,8 +5,8 @@ from ui.caseUpdateTab import CaseUpdateTab
 from ui.designNeedTab import DesignNeedTab
 from ui.designDirectionsTab import DirectionsTab
 from ui.designSolutionTab import SolutionTab
-from ui.designSummaryTab import ProblemSummaryTab
-from ui.designComponentsTab import DesignComponentsTab
+#from ui.designSummaryTab import ProblemSummaryTab
+#from ui.designComponentsTab import DesignComponentsTab
 from services.epicorService import EpicorService
 from services.googleAIService import load_examples, load_role
 
@@ -54,8 +54,8 @@ class CaseTab(wx.Panel):
         self.page4 = DesignNeedTab(self.notebook, self)
         self.page5 = DirectionsTab(self.notebook)
         self.page6 = SolutionTab(self.notebook, self)
-        self.page7 = ProblemSummaryTab(self.notebook, self)
-        self.page8 = DesignComponentsTab(self.notebook, self)
+        #self.page7 = ProblemSummaryTab(self.notebook, self)
+        #self.page8 = DesignComponentsTab(self.notebook, self)
 
         # Add the pages to the notebook with the label to show on the tab
         self.notebook.AddPage(self.page1, "Download")
@@ -64,8 +64,8 @@ class CaseTab(wx.Panel):
         self.notebook.AddPage(self.page4, "Design Need")
         self.notebook.AddPage(self.page5, "Directions")
         self.notebook.AddPage(self.page6, "Solution")
-        self.notebook.AddPage(self.page7, "Problem Summary")
-        self.notebook.AddPage(self.page8, "Design Components")
+        #self.notebook.AddPage(self.page7, "Problem Summary")
+        #self.notebook.AddPage(self.page8, "Design Components")
 
         # Add notebook to the main sizer
         vbox.Add(self.notebook, 1, flag=wx.EXPAND | wx.ALL, border=5)

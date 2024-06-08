@@ -1,18 +1,31 @@
 import json
+import os
+
 import wx
-from components.richTextComponent import RichTextTab
+import wx.html2
 from services.googleAIService import get_solution_statement
 
 
-class SolutionTab:
-    def __init__(self, case_tab):
+class SolutionTab(wx.Panel):
+    def __init__(self, parent, case_tab):
+        super(SolutionTab, self).__init__(parent)
+
         self.case_tab = case_tab
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
         get_solution_button = wx.Button(self, label='Generate Solution')
         get_solution_button.Bind(wx.EVT_BUTTON, self.on_get_solution)
-        #TODO: richtexteditor goes here
-        self.Sizer.Add(get_solution_button, 0, wx.ALL | wx.CENTER, 5)
 
-    def on_get_solution(self, event):99
+        self.web_view = wx.html2.WebView.New(self)
+        self.web_view.LoadURL("file://" + os.path.abspath("components/markdown_editor.html"))
+
+        vbox.Add(self.web_view, 1, wx.EXPAND | wx.ALL, 5)
+        vbox.Add(get_solution_button, 0, wx.ALL | wx.CENTER, 5)
+
+        self.SetSizer(vbox)
+
+    def on_get_solution(self, event):
         if not self.case_tab.role:
             wx.MessageBox('Role is not set. Please set it in the settings.', 'Error', wx.OK | wx.ICON_ERROR)
             return
