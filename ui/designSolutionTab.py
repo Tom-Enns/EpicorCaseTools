@@ -4,15 +4,15 @@ from components.richTextComponent import RichTextTab
 from services.googleAIService import get_solution_statement
 
 
-class SolutionTab(RichTextTab):
-    def __init__(self, parent, case_tab):
-        super(SolutionTab, self).__init__(parent)
+class SolutionTab:
+    def __init__(self, case_tab):
         self.case_tab = case_tab
         get_solution_button = wx.Button(self, label='Generate Solution')
         get_solution_button.Bind(wx.EVT_BUTTON, self.on_get_solution)
+        #TODO: richtexteditor goes here
         self.Sizer.Add(get_solution_button, 0, wx.ALL | wx.CENTER, 5)
 
-    def on_get_solution(self, event):
+    def on_get_solution(self, event):99
         if not self.case_tab.role:
             wx.MessageBox('Role is not set. Please set it in the settings.', 'Error', wx.OK | wx.ICON_ERROR)
             return
