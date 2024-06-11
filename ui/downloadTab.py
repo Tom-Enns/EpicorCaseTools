@@ -58,6 +58,7 @@ class DownloadTab(wx.Panel):
         # Attachments list
         self.attachments = wx.ListCtrl(self, style=wx.LC_REPORT)
         vbox.Add(self.attachments, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
+        self.attachments.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_download)
         self.SetSizer(vbox)
 
     def refresh_data(self):
@@ -104,9 +105,7 @@ class DownloadTab(wx.Panel):
             wx.MessageBox('No attachment selected')
             return
 
-
-        #for attachment in self.attachments.GetNextSelected(index):
-
+        #for attachment in self.attachments.GetNextSelected():
 
         filename = self.attachments.GetItem(index, 0).GetText()
         xFileRefNum = int(self.attachments.GetItem(index, 2).GetText())
