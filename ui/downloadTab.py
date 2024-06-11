@@ -97,7 +97,7 @@ class DownloadTab(wx.Panel):
 
         self.attachments.SetItem(i, 2, str(attachment['XFileRefNum']))
 
-    def on_download(self):
+    def on_download(self) -> object:
         index = self.attachments.GetFirstSelected()
         if index == -1:
             wx.MessageBox('No attachment selected')
