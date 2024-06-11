@@ -153,14 +153,14 @@ class CaseListTab(wx.Panel):
         return ((selected_assignee == "All" or selected_assignee == case.get('SalesRep1_Name', '')) and
                 (selected_task == "All" or selected_task == case.get('Task_TaskDescription', '')))
 
-    def on_filter_changed(self):
+    def on_filter_changed(self, event):
         self.update_cases_list()
 
-    def on_refresh_clicked(self):
+    def on_refresh_clicked(self, event):
         # Reload your case data and refresh the list
         self.load_cases()
 
-    def on_sort_by_changed(self):
+    def on_sort_by_changed(self, event):
         sort_column = self.sort_by_dropdown.GetSelection()
         self.sort_cases(sort_column)
         self.update_cases_list()

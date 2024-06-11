@@ -54,7 +54,7 @@ class Mywin(wx.Frame):
         check_config_vars(config_vars)
 
         # Initialize window
-        super(Mywin, self).__init__(parent, title=title, size=(390, 270), style=wx.DEFAULT_FRAME_STYLE | (
+        super(Mywin, self).__init__(parent, title=title, size=(800, 600), style=wx.DEFAULT_FRAME_STYLE | (
             wx.STAY_ON_TOP if config.getboolean('DEFAULT', 'ALWAYS_ON_TOP', fallback=False) else 0))
 
         # Set icon

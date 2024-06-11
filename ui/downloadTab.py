@@ -45,19 +45,20 @@ class DownloadTab(wx.Panel):
     def init_ui(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        # Add the button
+        # 'Download' button
+        self.download_button = wx.Button(self, label="Download")
+        vbox.Add(self.download_button, flag=wx.EXPAND | wx.ALL, border=5)
+        self.download_button.Bind(wx.EVT_BUTTON, self.on_download)
+
+        # 'Create Design Doc' button
         self.create_design_doc_button = wx.Button(self, label="Create Design Doc")
         vbox.Add(self.create_design_doc_button, flag=wx.EXPAND | wx.ALL, border=5)
-
-        self.attachments = wx.ListCtrl(self, style=wx.LC_REPORT)
-        vbox.Add(self.attachments, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
-
-        self.SetSizer(vbox)
-
-        # Bind the button click event
         self.create_design_doc_button.Bind(wx.EVT_BUTTON, self.on_create_design_doc)
 
-        self.attachments.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_download)
+        # Attachments list
+        self.attachments = wx.ListCtrl(self, style=wx.LC_REPORT)
+        vbox.Add(self.attachments, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
+        self.SetSizer(vbox)
 
     def refresh_data(self):
         case_num = self.get_case_number()
@@ -97,11 +98,15 @@ class DownloadTab(wx.Panel):
 
         self.attachments.SetItem(i, 2, str(attachment['XFileRefNum']))
 
-    def on_download(self) -> object:
+    def on_download(self, event) -> object:
         index = self.attachments.GetFirstSelected()
         if index == -1:
             wx.MessageBox('No attachment selected')
             return
+
+
+        #for attachment in self.attachments.GetNextSelected(index):
+
 
         filename = self.attachments.GetItem(index, 0).GetText()
         xFileRefNum = int(self.attachments.GetItem(index, 2).GetText())

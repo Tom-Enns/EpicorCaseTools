@@ -8,6 +8,7 @@
         body, .CodeMirror, .CodeMirror-lines, .CodeMirror pre, .editor-toolbar {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
         }
+
         #debug-log {
             border: 1px solid #ccc;
             padding: 10px;
@@ -21,17 +22,17 @@
         var simplemde;
 
         function initEditor() {
-            simplemde = new SimpleMDE({ element: document.getElementById("markdown-editor") });
+            simplemde = new SimpleMDE({element: document.getElementById("markdown-editor")});
         }
 
         function logMessage(message) {
-            var log = document.getElementById("debug-log");
-            var entry = document.createElement("div");
-            entry.textContent = message;
-            log.appendChild(entry);
+            //var log = document.getElementById("debug-log");
+            //var entry = document.createElement("div");
+            //entry.textContent = message;
+            //log.appendChild(entry);
         }
 
-        window.onload = function() {
+        window.onload = function () {
             initEditor();
             logMessage("Editor initialized");
         };
