@@ -83,7 +83,7 @@ class CaseUpdateTab(wx.Panel):
 
             self.assignee_input.SetValue(assignee)
 
-    def on_update_case_button_clicked(self):
+    def on_update_case_button_clicked(self, event):
         try:
             case_number = self.get_case_number()
             quantity_str = self.quantity_text.GetValue()

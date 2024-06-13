@@ -86,7 +86,7 @@ class UploadTab(wx.Panel):
         for i, file in enumerate(files):
             self.files_list.InsertItem(i, file)
 
-    def on_upload_button_clicked(self):
+    def on_upload_button_clicked(self, event):
         selected_index = self.files_list.GetFirstSelected()
         if selected_index == -1:
             wx.MessageBox('No file selected')
