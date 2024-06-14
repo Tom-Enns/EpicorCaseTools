@@ -1,3 +1,5 @@
+from typing import List, Any, Type
+
 import wx
 import os
 import subprocess
@@ -46,9 +48,9 @@ class DownloadTab(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # 'Download' button
-        self.download_button = wx.Button(self, label="Download")
+        self.download_button = wx.Button(self, label="Download All Supporting Docs")
         vbox.Add(self.download_button, flag=wx.EXPAND | wx.ALL, border=5)
-        self.download_button.Bind(wx.EVT_BUTTON, self.on_download)
+        self.download_button.Bind(wx.EVT_BUTTON, self.on_download_button_click)
 
         # 'Create Design Doc' button
         self.create_design_doc_button = wx.Button(self, label="Create Design Doc")
@@ -58,7 +60,7 @@ class DownloadTab(wx.Panel):
         # Attachments list
         self.attachments = wx.ListCtrl(self, style=wx.LC_REPORT)
         vbox.Add(self.attachments, proportion=1, flag=wx.EXPAND | wx.ALL, border=5)
-        self.attachments.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_download)
+        self.attachments.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_activate_list_item)
         self.SetSizer(vbox)
 
     def refresh_data(self):
@@ -79,13 +81,12 @@ class DownloadTab(wx.Panel):
     def populate_attachments_list(self, attachments):
         self.attachments.ClearAll()
 
-        self.attachments.InsertColumn(0, 'FileName')
-        self.attachments.SetColumnWidth(0, 300)
+        cols = list(['FileName', 'DocTypeID', 'XFileRefNum'])
+        col_width = wx.LIST_AUTOSIZE_USEHEADER
 
-        self.attachments.InsertColumn(1, 'DocTypeID')
-
-        self.attachments.InsertColumn(2, 'XFileRefNum')
-        self.attachments.SetColumnWidth(2, 0)
+        for i in range(0, len(cols)):
+            self.attachments.InsertColumn(i, cols[i])
+            self.attachments.SetColumnWidth(i, col_width)
 
         for i, attachment in enumerate(attachments):
             self.add_attachment_to_list(i, attachment)
@@ -99,32 +100,42 @@ class DownloadTab(wx.Panel):
 
         self.attachments.SetItem(i, 2, str(attachment['XFileRefNum']))
 
-    def on_download(self, event) -> object:
-        index = self.attachments.GetFirstSelected()
-        if index == -1:
-            wx.MessageBox('No attachment selected')
-            return
+    def on_download_button_click(self, event):
+        """
+        Download button clicked. Download all attachments.
+        :param event:
+        :return:
+        """
+        for i in range(0, self.attachments.GetItemCount()):
+            # Only download 'Supporting' docs or uncategorized.
+            # We don't want to download things that have already been sent out, sign-offs, etc.
+            doc_type_id = self.attachments.GetItem(i, 1).GetText()
+            print(doc_type_id)
+            if doc_type_id == '' or doc_type_id == 'Supp':
+                self.download_file_by_list_index(i)
 
-        #for attachment in self.attachments.GetNextSelected():
+    def on_activate_list_item(self, event):
+        """
+        Download the double-clicked file
+        :param event:
+        """
+        # What got clicked?
+        selected_index = event.GetIndex()
+        self.download_file_by_list_index(selected_index)
 
+    def download_file_by_list_index(self, index):
+        """
+        Take an index from the attachment list and download the represented file.
+        :param index: Row Index
+        """
         filename = self.attachments.GetItem(index, 0).GetText()
         xFileRefNum = int(self.attachments.GetItem(index, 2).GetText())
         case_num = self.get_case_number()
 
-        self.download_file(case_num, filename, xFileRefNum)
-
-    def download_file(self, case_num, filename, xFileRefNum):
-        design_file_name = f"Design - Case {case_num} V1.docx"
         case_folder_path = os.path.join(DOC_PATH, str(case_num))
 
-        if filename.endswith(".docx") and not os.path.exists(os.path.join(case_folder_path, design_file_name)):
-            dialog = wx.MessageDialog(self,
-                                      "There is no Design V1 saved to this case folder yet, do you want to rename this file?",
-                                      style=wx.YES_NO)
-            result = dialog.ShowModal()
-            if result == wx.ID_YES:
-                filename = design_file_name
-            dialog.Destroy()
+        # If this looks like a design doc, ask the user if the want to up the revision. V1, V2, etc
+        filename = self.ask_to_rename_design_docs(case_folder_path, filename, case_num)
 
         content = epicor_service.download_file_by_xRefNum(xFileRefNum)
         if content:
@@ -134,18 +145,37 @@ class DownloadTab(wx.Panel):
         else:
             print(f"No content to write for: {filename}")
 
-    def handle_docx_file(self, case_num, filename):
-        design_file_name = f"Design - Case {case_num} V1.docx"
-        case_folder_path = os.path.join(DOC_PATH, str(case_num))
+    def ask_to_rename_design_docs(self, case_folder_path, filename, case_num):
+        """
+        See if we have existing design docs. If this looks like a design doc, ask to rename it as the next version.
+        :param case_folder_path: Path to the case folder
+        :param filename: File we're downloading
+        :param case_num: Case number
+        :return: Chosen file name.
+        """
 
-        if not os.path.exists(os.path.join(case_folder_path, design_file_name)):
-            dialog = wx.MessageDialog(self,
-                                      "There is no Design V1 saved to this case folder yet, do you want to rename this file?",
-                                      style=wx.YES_NO)
+        is_named_like_design_doc = filename.lower().endswith(".docx") and "design" in filename.lower()
+
+        # If this isn't a design doc, we don't want to bother with renaming
+        if not is_named_like_design_doc:
+            return filename
+
+        # We'll suggest renaming the design to that next available rev.
+        design_version = 1
+        proposed_design_file_name = f"Design - Case {case_num} V{design_version}.docx"
+
+        # Let's start with V1 and find the next revision.
+        while os.path.exists(os.path.join(case_folder_path, proposed_design_file_name)):
+            design_version += 1
+            proposed_design_file_name = f"Design - Case {case_num} V{design_version}.docx"
+
+        # Ask user to change. If they decline, stick with original name.
+        with wx.MessageDialog(self,
+                              f"Do you want to rename '{filename}' to '{proposed_design_file_name}'?",
+                              style=wx.YES_NO) as dialog:
             result = dialog.ShowModal()
             if result == wx.ID_YES:
-                filename = design_file_name
-            dialog.Destroy()
+                filename = proposed_design_file_name
 
         return filename
 
