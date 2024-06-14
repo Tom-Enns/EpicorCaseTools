@@ -149,7 +149,7 @@ class DownloadTab(wx.Panel):
 
         return filename
 
-    def on_create_design_doc(self):
+    def on_create_design_doc(self, event):
         # Get the case number
         case_num = self.get_case_number()
         if not case_num:
