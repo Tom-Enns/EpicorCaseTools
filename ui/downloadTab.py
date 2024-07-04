@@ -186,8 +186,24 @@ class DownloadTab(wx.Panel):
             wx.MessageBox('No case number selected')
             return
 
-        # Define the source file path
-        source_file_path = "/Users/tomenns/Documents/DevDesignDocTemplate.docx"
+        # Ask the user what kind of document they want to create
+        doc_types = ["Development", "Report", "EFT"]
+        dialog = wx.SingleChoiceDialog(self, "Select the type of document to create", "Document Type", doc_types)
+
+        if dialog.ShowModal() == wx.ID_OK:
+            doc_type = dialog.GetStringSelection()
+        else:
+            wx.MessageBox('No document type selected')
+            return
+
+        # Define the source file path based on the document type
+        doc_type_map = {
+            "Development": "DevelopmentDesignTemplate.docx",
+            "Report": "ReportDesignTemplate.docx",
+            "EFT": "EFTDesignTemplate.docx"
+        }
+        source_file_name = doc_type_map[doc_type]
+        source_file_path = os.path.join(os.getcwd(), "samples", source_file_name)
 
         # Define the destination file path
         design_file_name = f"Design - Case {case_num} V1.docx"
@@ -200,7 +216,6 @@ class DownloadTab(wx.Panel):
         # Copy the file
         try:
             shutil.copyfile(source_file_path, destination_file_path)
-            wx.MessageBox(f"Design doc created at {destination_file_path}")
 
             # Open the file
             subprocess.run(["open", destination_file_path], check=True)
