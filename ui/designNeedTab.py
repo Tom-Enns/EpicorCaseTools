@@ -1,7 +1,6 @@
 import wx
 import os
 import tempfile
-import base64
 from services.epicorService import EpicorService
 from services.docService import DocService
 import wx.lib.mixins.listctrl as listmix

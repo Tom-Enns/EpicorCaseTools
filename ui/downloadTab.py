@@ -1,5 +1,3 @@
-from typing import List, Any, Type
-
 import wx
 import os
 import subprocess

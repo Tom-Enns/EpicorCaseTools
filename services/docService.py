@@ -1,6 +1,5 @@
 from typing import Optional, Union
 from docx import Document
-from io import BytesIO
 import re
 from .epicorService import EpicorService
 

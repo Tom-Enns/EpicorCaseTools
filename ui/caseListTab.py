@@ -68,47 +68,50 @@ class CaseListTab(wx.Panel):
         self.refresh_button.Bind(wx.EVT_BUTTON, self.on_refresh_clicked)
 
     def load_cases(self):
-        # Save the current selections
-        current_assignee_selection = self.case_assignee_filter.GetStringSelection()
-        current_task_selection = self.task_description_filter.GetStringSelection()
-        current_sort_selection = self.sort_by_dropdown.GetStringSelection()
+        try:
+            # Save the current selections
+            current_assignee_selection = self.case_assignee_filter.GetStringSelection()
+            current_task_selection = self.task_description_filter.GetStringSelection()
+            current_sort_selection = self.sort_by_dropdown.GetStringSelection()
 
-        # Reload your cases data
-        self.cases = self.epicor_service.fetch_cases()
+            # Reload your cases data
+            self.cases = self.epicor_service.fetch_cases()
 
-        # Repopulate the dropdowns
-        case_assignees = sorted(
-            set(case.get('SalesRep1_Name', 'Unknown') for case in self.cases if case.get('SalesRep1_Name')))
-        task_descriptions = sorted(set(case.get('Task_TaskDescription') or 'No Description' for case in self.cases))
+            # Repopulate the dropdowns
+            case_assignees = sorted(
+                set(case.get('SalesRep1_Name', 'Unknown') for case in self.cases if case.get('SalesRep1_Name')))
+            task_descriptions = sorted(set(case.get('Task_TaskDescription') or 'No Description' for case in self.cases))
 
-        self.case_assignee_filter.Clear()
-        self.case_assignee_filter.AppendItems(["All"] + case_assignees)
-        self.task_description_filter.Clear()
-        self.task_description_filter.AppendItems(["All"] + task_descriptions)
+            self.case_assignee_filter.Clear()
+            self.case_assignee_filter.AppendItems(["All"] + case_assignees)
+            self.task_description_filter.Clear()
+            self.task_description_filter.AppendItems(["All"] + task_descriptions)
 
-        # Restore the selections
-        if current_assignee_selection in case_assignees or current_assignee_selection == "All":
-            self.case_assignee_filter.SetStringSelection(current_assignee_selection)
-        else:
-            self.case_assignee_filter.SetSelection(0)
+            # Restore the selections
+            if current_assignee_selection in case_assignees or current_assignee_selection == "All":
+                self.case_assignee_filter.SetStringSelection(current_assignee_selection)
+            else:
+                self.case_assignee_filter.SetSelection(0)
 
-        if current_task_selection in task_descriptions or current_task_selection == "All":
-            self.task_description_filter.SetStringSelection(current_task_selection)
-        else:
-            self.task_description_filter.SetSelection(0)
+            if current_task_selection in task_descriptions or current_task_selection == "All":
+                self.task_description_filter.SetStringSelection(current_task_selection)
+            else:
+                self.task_description_filter.SetSelection(0)
 
-        if current_sort_selection in self.sort_by_choices:
-            self.sort_by_dropdown.SetStringSelection(current_sort_selection)
-        else:
-            self.sort_by_dropdown.SetSelection(0)
+            if current_sort_selection in self.sort_by_choices:
+                self.sort_by_dropdown.SetStringSelection(current_sort_selection)
+            else:
+                self.sort_by_dropdown.SetSelection(0)
 
-        # Apply sorting if needed
-        if current_sort_selection and current_sort_selection in self.sort_by_choices:
-            sort_column_index = self.sort_by_choices.index(current_sort_selection)
-            self.sort_cases(sort_column_index)
+            # Apply sorting if needed
+            if current_sort_selection and current_sort_selection in self.sort_by_choices:
+                sort_column_index = self.sort_by_choices.index(current_sort_selection)
+                self.sort_cases(sort_column_index)
 
-        # Update the list to reflect changes
-        self.update_cases_list()
+            # Update the list to reflect changes
+            self.update_cases_list()
+        except Exception as e:
+            print(e)
 
     def update_cases_list(self):
         self.cases_list.DeleteAllItems()

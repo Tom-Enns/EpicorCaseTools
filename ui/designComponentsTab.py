@@ -1,6 +1,4 @@
-import json
 import os
-
 import wx
 from services.googleAIService import generate_google_ai_response
 from utilities.utilities import escape_js_string
