@@ -248,6 +248,7 @@ class EpicorService:
         :param quantity: Quantity
         :param unit_price: Unit Price
         """
+        logger.info(f"Update Case Part and Price: Case: {case_num} Quantity: {quantity} Unit Price: {unit_price}")
         self.post_request("/api/v2/efx/100/CaseDev/UpdatePartandPrice", {
             'CaseNum': case_num,
             'PartNum': 'DevCon',
